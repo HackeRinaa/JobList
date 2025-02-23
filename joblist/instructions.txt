@@ -1,0 +1,223 @@
+# Home Service Provider App - Instructions
+
+## Tech Stack
+- **Frontend:** Next.js (TypeScript), Tailwind CSS
+- **Backend:** Express, Supabase (for auth and database), Prisma (ORM)
+- **Payments:** Stripe (monthly subscriptions and tokens)
+- **Database:** PostgreSQL (via Supabase)
+- **Hosting:** Vercel (for Next.js), Render/Heroku (for Express backend)
+- **Animations:** Components and animations from `hover.dev`
+
+---
+
+## Project Structure
+
+### Frontend (Next.js)src/
+├── app/ # Next.js app directory (App Router)
+│ ├── (auth)/ # Auth-related routes (login, signup)
+│ ├── (worker)/ # Worker-specific routes (dashboard, profile, etc.)
+│ ├── (customer)/ # Customer-specific routes (dashboard, listings, etc.)
+│ ├── api/ # API routes for frontend
+│ ├── components/ # Reusable components
+│ ├── lib/ # Utility functions (e.g., Stripe, Supabase client)
+│ ├── styles/ # Global styles
+│ ├── layout.tsx # Root layout
+│ └── page.tsx # Home page
+├── public/ # Static assets (images, icons)
+### Backend (Express)backend/
+├── src/
+│ ├── controllers/ # Route handlers
+│ ├── middleware/ # Auth middleware, error handling
+│ ├── models/ # Prisma models
+│ ├── routes/ # API routes
+│ ├── services/ # Business logic (e.g., Stripe, Supabase)
+│ ├── utils/ # Utility functions
+│ └── index.ts # Entry point
+├── prisma/ # Prisma schema and migrations
+├── .env # Environment variables
+└── package.json # Backend dependencies
+
+
+---
+
+## Features and Components
+
+### 1. **Authentication**
+- **Supabase Auth:** Handle signup, login, and profile management for both workers and customers.
+- **Protected Routes:** Use middleware to restrict access to worker/customer dashboards.
+
+### 2. **Customer Features**
+- **Post Listings:** Customers can post job listings for free.
+- **Manage Listings:** Customers can view, edit, and delete their listings.
+- **Choose Worker:** Customers can select a worker from applicants.
+
+### 3. **Worker Features**
+- **Subscription Plans:** Workers choose from 3 monthly plans (Basic, Standard, Premium) via Stripe.
+- **Tokens:** Each plan grants a specific number of tokens to unlock job listings.
+- **Apply to Listings:** Workers use tokens to apply to listings.
+- **Profile Management:** Workers can update their profile (skills, bio, etc.).
+
+### 4. **Payments**
+- **Stripe Integration:**
+  - Handle monthly subscriptions for workers.
+  - Manage token allocation based on the selected plan.
+  - Webhook to handle payment success/failure.
+
+### 5. **Database (Prisma + Supabase)**
+- **Models:**
+  - User (workers and customers)
+  - Listing (job postings)
+  - Application (worker applications)
+  - Subscription (worker subscriptions)
+  - Token (worker tokens)
+- **Relations:**
+  - User ↔ Listing (one-to-many)
+  - User ↔ Subscription (one-to-one)
+  - User ↔ Token (one-to-one)
+  - Listing ↔ Application (one-to-many)
+
+### 6. **Frontend Components**
+- **Navbar:** Logo, Home, How It Works, Worker, Customer, Contact, and Sign In button.
+- **Hero Section:** Introduction to the app with call-to-action buttons.
+- **Listing Card:** Displays job details (title, description, budget).
+- **Subscription Plans:** Display 3 plans with features and pricing.
+- **Dashboard:**
+  - Customer: View and manage listings.
+  - Worker: View available listings, applications, and profile.
+
+---
+
+## Step-by-Step Instructions
+
+### 1. **Set Up Next.js with TypeScript and Tailwind**
+```bash
+npx create-next-app@latest --typescript
+cd your-app
+npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss initmkdir backend
+cd backend
+npm init -y
+npm install express prisma @prisma/client stripe supabase
+npx prisma init3. Configure Supabase
+Create a Supabase project and get your API keys.
+
+Set up auth and database tables.
+
+4. Set Up Prisma
+Define your schema in prisma/schema.prisma.
+
+Run migrations:
+
+bash
+Copy
+npx prisma migrate dev --name init
+5. Integrate Stripe
+Install Stripe SDK:
+
+bash
+Copy
+npm install stripe
+Set up subscription plans and webhooks.
+
+6. Build Frontend Pages
+Home Page: Hero section, listing previews.
+
+Auth Pages: Login and signup forms.
+
+Dashboard Pages: Customer and worker dashboards.
+
+7. Add Animations with hover.dev
+Install hover.dev components:
+
+bash
+Copy
+npm install @hover-dev/react
+Use pre-built components like FloatingNav for the navbar and FeatureGrid for the features section.
+
+8. Navbar Implementation
+Use the FloatingNav component from hover.dev:
+
+tsx
+Copy
+import { FloatingNav } from "@hover-dev/react";
+
+const Navbar = () => {
+  return (
+    <FloatingNav
+      logo={<img src="/logo.png" alt="Logo" className="h-8" />}
+      links={[
+        { name: "Home", href: "/" },
+        { name: "How It Works", href: "/how-it-works" },
+        { name: "Worker", href: "/worker" },
+        { name: "Customer", href: "/customer" },
+        { name: "Contact", href: "/contact" },
+      ]}
+      cta={<button className="bg-blue-500 text-white px-4 py-2 rounded">Sign In</button>}
+    />
+  );
+};
+
+export default Navbar;
+9. Connect Frontend and Backend
+Use Next.js API routes to interact with the Express backend.
+
+Fetch data using fetch or axios.
+
+10. Deploy
+Frontend: Deploy to Vercel.
+
+Backend: Deploy to Render/Heroku.
+
+Example Code Snippets
+1. Prisma Schema
+prisma
+Copy
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  role      String   // "worker" or "customer"
+  listings  Listing[]
+  subscription Subscription?
+  tokens     Token?
+}
+
+model Listing {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  customerId  Int
+  customer    User     @relation(fields: [customerId], references: [id])
+  applications Application[]
+}
+
+model Subscription {
+  id        Int      @id @default(autoincrement())
+  plan      String
+  userId    Int      @unique
+  user      User     @relation(fields: [userId], references: [id])
+}
+2. Stripe Subscription
+typescript
+Copy
+import Stripe from "stripe";
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+
+// Create a subscription
+const subscription = await stripe.subscriptions.create({
+  customer: customerId,
+  items: [{ price: planId }],
+});
+Next Steps
+Set up the project structure.
+
+Implement authentication with Supabase.
+
+Build the frontend components.
+
+Integrate Stripe for payments.
+
+Add animations using hover.dev.
+
+Deploy and test the app.
+└── tailwind.config.js # Tailwind CSS configuration
