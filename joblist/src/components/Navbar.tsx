@@ -54,7 +54,7 @@ export default function FloatingNavbar() {
 
         {/* Sign In Button */}
         <Link
-          href="/auth/login"
+          href="/login"
           className="hidden md:block bg-[#FB7600] text-white px-6 py-2 rounded-full text-sm hover:bg-[#E56A00] transition-colors"
         >
           Σύνδεση
