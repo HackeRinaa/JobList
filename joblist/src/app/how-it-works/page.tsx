@@ -15,7 +15,7 @@ export default function HowItWorks() {
             <br /> <span className="text-[#FB7600]">Μάστορες</span> &{" "}
             <span className="text-[#FB7600]">Ιδιώτες</span>
           </h2>
-          <p className="mt-5 font-medium text-gray-600 max-w-[300px]">
+          <p className="mt-6 text-lg font-semibold text-gray-400 max-w-[300px]">
             Προγραμμάτισε τις δουλειές σου εύκολα και γρήγορα, βρίσκοντας
             κατάλληλους επαγγελματίες.
           </p>

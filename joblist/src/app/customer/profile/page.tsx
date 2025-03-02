@@ -1,31 +1,28 @@
 "use client";
 import React, { useState } from "react";
 import FloatingNavbar from "@/components/Navbar";
-import WorkerSidebar from "@/components/worker/WorkerSidebar";
-import WorkerProfile from "@/components/worker/WorkerProfile";
-import TokensPanel from "@/components/worker/TokensPanel";
-import JobListings from "@/components/worker/JobListings";
-import CompletedJobs from "@/components/worker/CompletedJobs";
-import UpgradeSubscription from "@/components/worker/UpgradeSubscription";
+import CustomerSidebar from "@/components/customer/CustomerSidebar";
+import CustomerProfile from "@/components/customer/CustomerProfile";
+import ActiveListings from "@/components/customer/ActiveListings";
+import CompletedListings from "@/components/customer/CompletedListings";
+import SavedProfessionals from "@/components/customer/SavedProfessionals";
 
-export default function WorkerDashboard() {
+export default function CustomerDashboard() {
   const [activeTab, setActiveTab] = useState("profile");
 
   // Render the appropriate component based on the active tab
   const renderContent = () => {
     switch (activeTab) {
       case "profile":
-        return <WorkerProfile />;
-      case "tokens":
-        return <TokensPanel />;
-      case "listings":
-        return <JobListings />;
+        return <CustomerProfile />;
+      case "active":
+        return <ActiveListings />;
       case "completed":
-        return <CompletedJobs />;
-      case "upgrade":
-        return <UpgradeSubscription />;
+        return <CompletedListings />;
+      case "saved":
+        return <SavedProfessionals />;
       default:
-        return <WorkerProfile />;
+        return <CustomerProfile />;
     }
   };
 
@@ -35,7 +32,7 @@ export default function WorkerDashboard() {
       <div className="container mx-auto pt-24 px-4 pb-10">
         <div className="flex flex-col md:flex-row gap-6">
           {/* Sidebar */}
-          <WorkerSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+          <CustomerSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
           
           {/* Main Content */}
           <div className="flex-1 bg-white rounded-lg shadow-md p-6">

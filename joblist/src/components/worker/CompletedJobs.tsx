@@ -15,7 +15,7 @@ interface CompletedJob {
 
 export default function CompletedJobs() {
   const [filter, setFilter] = useState("all");
-  const [completedJobs, setCompletedJobs] = useState<CompletedJob[]>([
+  const completedJobs: CompletedJob[] = [
     {
       id: "1",
       title: "Εγκατάσταση ηλεκτρικού πίνακα",
@@ -56,7 +56,7 @@ export default function CompletedJobs() {
       rating: 3,
       feedback: "Έκανε τη δουλειά, αλλά άφησε αρκετή ακαταστασία.",
     },
-  ]);
+  ];
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -165,7 +165,7 @@ export default function CompletedJobs() {
               {job.feedback && (
                 <div className="mt-3 pt-3 border-t border-gray-100">
                   <h4 className="text-sm font-medium text-gray-700">Σχόλια Πελάτη:</h4>
-                  <p className="text-gray-600 italic">"{job.feedback}"</p>
+                  <p className="text-gray-600 italic">&quot;{job.feedback}&quot;</p>
                 </div>
               )}
             </div>
