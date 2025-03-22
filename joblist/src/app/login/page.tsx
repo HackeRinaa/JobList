@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FiMail, FiLock, FiUser, FiBriefcase } from "react-icons/fi";
-import Image from "next/image";
 import FloatingNavbar from "@/components/Navbar";
 
 export default function LoginPage() {
@@ -42,24 +41,12 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <FloatingNavbar />
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center">
-          <Link href="/">
-            <div className="relative w-32 h-32">
-              <Image 
-                src="/logo.png" 
-                alt="JobList Logo" 
-                fill
-                style={{ objectFit: "contain" }}
-              />
-            </div>
-          </Link>
-        </div>
         <h2 className="mt-2 text-center text-3xl font-medium text-gray-900">
           Σύνδεση στο λογαριασμό σας
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
           Ή{" "}
-          <Link href="/signup" className="font-medium text-[#FB7600] hover:text-orange-700">
+          <Link href={userType === "customer" ? "/customer" : "/worker"} className="font-medium text-[#FB7600] hover:text-orange-700">
             δημιουργήστε νέο λογαριασμό
           </Link>
         </p>

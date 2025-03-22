@@ -40,7 +40,7 @@ const ChoosePlan: React.FC<ChoosePlanProps> = ({
             key={plan.name}
             className={`border border-[2px] rounded-lg p-6 cursor-pointer transition-all ${
               selectedPlan === plan.name
-                ? "border-[#FB7600] shadow-lg border-[3px]"
+                ? "border-[#FB7600] shadow-lg border-[3px] scale-105"
                 : "border-gray-200 hover:border-[#FB7600] hover:shadow"
             } ${plan.recommended ? "relative" : ""}`}
             onClick={() => handlePlanSelect(plan.name)}

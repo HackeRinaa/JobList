@@ -1,5 +1,5 @@
 import React from "react";
-import { FiUser, FiList, FiCheckCircle, FiHeart } from "react-icons/fi";
+import { FiUser, FiList, FiCheckCircle, FiHeart, FiMessageCircle } from "react-icons/fi";
 
 interface CustomerSidebarProps {
   activeTab: string;
@@ -12,6 +12,7 @@ export default function CustomerSidebar({ activeTab, setActiveTab }: CustomerSid
     { id: "active", label: "Ενεργές Αγγελίες", icon: <FiList /> },
     { id: "completed", label: "Ολοκληρωμένες Εργασίες", icon: <FiCheckCircle /> },
     { id: "saved", label: "Αποθηκευμένοι Επαγγελματίες", icon: <FiHeart /> },
+    { id: "chat", label: "Συνομιλίες", icon: <FiMessageCircle /> },
   ];
 
   return (

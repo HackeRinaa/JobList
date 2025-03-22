@@ -16,13 +16,14 @@ interface JobListing {
 
 interface JobListingCardProps {
   job: JobListing;
-  onApply: (jobId: string, message: string) => void;
+  onApply: (jobId: string, message: string, estimatedPrice: string) => void;
 }
 
 export default function JobListingCard({ job, onApply }: JobListingCardProps) {
+  const [showDetails, setShowDetails] = useState(false);
   const [showApplyModal, setShowApplyModal] = useState(false);
-  const [expanded, setExpanded] = useState(false);
-  const [message, setMessage] = useState("");
+  const [applyMessage, setApplyMessage] = useState("");
+  const [estimatedPrice, setEstimatedPrice] = useState("");
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -34,13 +35,14 @@ export default function JobListingCard({ job, onApply }: JobListingCardProps) {
   };
 
   const confirmApply = () => {
-    onApply(job.id, message);
+    onApply(job.id, applyMessage, estimatedPrice);
     setShowApplyModal(false);
-    setMessage("");
+    setApplyMessage("");
+    setEstimatedPrice("");
   };
 
   return (
-    <div className={`border rounded-lg overflow-hidden ${job.premium ? 'border-[#FB7600]' : 'border-gray-200'} mb-4`}>
+    <div className={`border rounded-lg overflow-hidden ${job.premium ? "border-[#FB7600] bg-orange-50" : "border-gray-200 bg-white"}`}>
       <div className="p-4">
         <div className="flex justify-between items-start">
           <div>
@@ -65,14 +67,14 @@ export default function JobListingCard({ job, onApply }: JobListingCardProps) {
             </div>
           </div>
           <button 
-            onClick={() => setExpanded(!expanded)}
+            onClick={() => setShowDetails(!showDetails)}
             className="text-gray-500 hover:text-[#FB7600]"
           >
-            {expanded ? <FiChevronUp /> : <FiChevronDown />}
+            {showDetails ? <FiChevronUp /> : <FiChevronDown />}
           </button>
         </div>
 
-        {expanded && (
+        {showDetails && (
           <div className="mt-4 border-t pt-4">
             <div className="mb-4">
               <h4 className="font-semibold text-gray-700 mb-2">Περιγραφή</h4>
@@ -110,45 +112,43 @@ export default function JobListingCard({ job, onApply }: JobListingCardProps) {
       {showApplyModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-xl font-bold mb-4">Αίτηση για Εργασία</h3>
+            <h3 className="text-xl font-bold text-gray-800 mb-4">Αίτηση για την εργασία</h3>
+            
             <div className="mb-4">
-              <p className="mb-2">
-                <strong>Εργασία:</strong> {job.title}
-              </p>
-              <p className="mb-2">
-                <strong>Τοποθεσία:</strong> {job.location}
-              </p>
-              <p className="mb-2">
-                <strong>Προϋπολογισμός:</strong> {job.budget}
-              </p>
-              <p className="mb-4">
-                <strong>Κόστος:</strong> {job.tokenCost} {job.tokenCost === 1 ? "token" : "tokens"}
-              </p>
-              
-              <div className="mt-4">
-                <label className="block text-gray-700 mb-2">
-                  Μήνυμα προς τον πελάτη (προαιρετικό)
-                </label>
-                <textarea
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-lg h-24 focus:ring-[#FB7600] focus:border-[#FB7600]"
-                  placeholder="Γράψε ένα μήνυμα σχετικά με την εμπειρία σου και γιατί είσαι κατάλληλος για αυτή την εργασία..."
-                ></textarea>
-              </div>
+              <label className="block text-gray-700 mb-2">Εκτιμώμενη τιμή (€)</label>
+              <input
+                type="text"
+                value={estimatedPrice}
+                onChange={(e) => setEstimatedPrice(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600]"
+                placeholder="π.χ. 50€"
+              />
             </div>
-            <div className="flex justify-end mt-4">
+            
+            <div className="mb-4">
+              <label className="block text-gray-700 mb-2">Μήνυμα (προαιρετικό)</label>
+              <textarea
+                value={applyMessage}
+                onChange={(e) => setApplyMessage(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600]"
+                rows={4}
+                placeholder="Περιγράψτε την εμπειρία σας ή άλλες λεπτομέρειες..."
+              />
+            </div>
+            
+            <div className="flex justify-end space-x-3">
               <button
                 onClick={() => setShowApplyModal(false)}
-                className="mr-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
               >
                 Ακύρωση
               </button>
               <button
                 onClick={confirmApply}
-                className="bg-[#FB7600] text-white px-4 py-2 rounded-lg hover:bg-orange-700"
+                className="px-4 py-2 bg-[#FB7600] text-white rounded-lg hover:bg-orange-700"
+                disabled={!estimatedPrice.trim()}
               >
-                Επιβεβαίωση ({job.tokenCost} tokens)
+                Υποβολή
               </button>
             </div>
           </div>

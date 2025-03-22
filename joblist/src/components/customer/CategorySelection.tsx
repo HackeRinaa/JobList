@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import { FiHome, FiTool, FiWifi, FiDroplet, FiSun, FiTruck, FiGrid, FiLayers } from "react-icons/fi";
 

@@ -1,5 +1,5 @@
 import React from "react";
-import { FiUser, FiCreditCard, FiList, FiCheckCircle, FiArrowUp } from "react-icons/fi";
+import { FiUser, FiCreditCard, FiList, FiCheckCircle, FiArrowUp, FiMessageCircle } from "react-icons/fi";
 
 interface WorkerSidebarProps {
   activeTab: string;
@@ -13,6 +13,7 @@ export default function WorkerSidebar({ activeTab, setActiveTab }: WorkerSidebar
     { id: "listings", label: "Αναζήτηση Εργασιών", icon: <FiList /> },
     { id: "completed", label: "Ολοκληρωμένες Εργασίες", icon: <FiCheckCircle /> },
     { id: "upgrade", label: "Αναβάθμιση Συνδρομής", icon: <FiArrowUp /> },
+    { id: "chat", label: "Συνομιλίες", icon: <FiMessageCircle /> },
   ];
 
   return (

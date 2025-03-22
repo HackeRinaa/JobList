@@ -6,6 +6,7 @@ import CustomerProfile from "@/components/customer/CustomerProfile";
 import ActiveListings from "@/components/customer/ActiveListings";
 import CompletedListings from "@/components/customer/CompletedListings";
 import SavedProfessionals from "@/components/customer/SavedProfessionals";
+import CustomerChat from "@/components/customer/CustomerChat";
 
 export default function CustomerDashboard() {
   const [activeTab, setActiveTab] = useState("profile");
@@ -21,6 +22,8 @@ export default function CustomerDashboard() {
         return <CompletedListings />;
       case "saved":
         return <SavedProfessionals />;
+      case "chat":
+        return <CustomerChat />;
       default:
         return <CustomerProfile />;
     }

@@ -7,6 +7,7 @@ import TokensPanel from "@/components/worker/TokensPanel";
 import JobListings from "@/components/worker/JobListings";
 import CompletedJobs from "@/components/worker/CompletedJobs";
 import UpgradeSubscription from "@/components/worker/UpgradeSubscription";
+import WorkerChat from "@/components/worker/WorkerChat";
 
 export default function WorkerDashboard() {
   const [activeTab, setActiveTab] = useState("profile");
@@ -24,6 +25,8 @@ export default function WorkerDashboard() {
         return <CompletedJobs />;
       case "upgrade":
         return <UpgradeSubscription />;
+      case "chat":
+        return <WorkerChat />;
       default:
         return <WorkerProfile />;
     }

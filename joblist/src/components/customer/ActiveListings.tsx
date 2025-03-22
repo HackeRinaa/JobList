@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { FiMapPin, FiCalendar, FiTag, FiMessageSquare } from "react-icons/fi";
+import { FiMapPin, FiCalendar, FiTag, FiMessageSquare, FiStar, FiX } from "react-icons/fi";
 import Link from "next/link";
 
 interface Application {
@@ -9,6 +9,11 @@ interface Application {
   workerName: string;
   message?: string;
   date: string;
+  estimatedPrice?: string;
+  rating?: number;
+  completedJobs?: number;
+  profession?: string;
+  bio?: string;
 }
 
 interface Listing {
@@ -42,6 +47,11 @@ export default function ActiveListings() {
           workerName: "Γιώργος Παπαδόπουλος",
           message: "Είμαι διαθέσιμος αύριο το πρωί. Έχω μεγάλη εμπειρία σε επισκευές διαρροών.",
           date: "2024-05-19",
+          estimatedPrice: "65€",
+          rating: 4.8,
+          completedJobs: 127,
+          profession: "Υδραυλικός",
+          bio: "Επαγγελματίας υδραυλικός με 15 χρόνια εμπειρίας. Εξειδίκευση σε επισκευές και εγκαταστάσεις σε κατοικίες και επαγγελματικούς χώρους."
         },
         {
           id: "a2",
@@ -49,6 +59,11 @@ export default function ActiveListings() {
           workerName: "Νίκος Αντωνίου",
           message: "Μπορώ να έρθω σήμερα το απόγευμα για να δω το πρόβλημα.",
           date: "2024-05-19",
+          estimatedPrice: "70€",
+          rating: 4.6,
+          completedJobs: 98,
+          profession: "Υδραυλικός",
+          bio: "Πιστοποιημένος υδραυλικός με εμπειρία σε οικιακές και βιομηχανικές εγκαταστάσεις. Άμεση εξυπηρέτηση και ποιοτική δουλειά."
         },
       ],
     },
@@ -68,6 +83,11 @@ export default function ActiveListings() {
           workerName: "Κώστας Δημητρίου",
           message: "Έχω εγκαταστήσει πάνω από 100 κλιματιστικά. Διαθέσιμος όποτε σας βολεύει.",
           date: "2024-05-16",
+          estimatedPrice: "100€",
+          rating: 4.9,
+          completedJobs: 156,
+          profession: "Τεχνικός Ψύξης/Θέρμανσης",
+          bio: "Εξειδικευμένος τεχνικός με πιστοποιήσεις σε όλες τις μεγάλες μάρκες κλιματιστικών. Παρέχω εγγύηση καλής λειτουργίας για όλες τις εργασίες."
         },
       ],
       assignedWorkerId: "w3",
@@ -95,6 +115,7 @@ export default function ActiveListings() {
   ]);
 
   const [expandedListing, setExpandedListing] = useState<string | null>(null);
+  const [selectedWorker, setSelectedWorker] = useState<Application | null>(null);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -145,6 +166,20 @@ export default function ActiveListings() {
       default:
         return "bg-gray-100 text-gray-800";
     }
+  };
+
+  const renderStars = (rating: number) => {
+    return (
+      <div className="flex items-center">
+        {Array(5).fill(0).map((_, i) => (
+          <FiStar 
+            key={i} 
+            className={`${i < rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`} 
+          />
+        ))}
+        <span className="ml-1 text-gray-700">{rating.toFixed(1)}</span>
+      </div>
+    );
   };
 
   return (
@@ -218,16 +253,62 @@ export default function ActiveListings() {
                             }`}
                           >
                             <div className="flex justify-between items-start">
-                              <div className="flex items-center">
-                                <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center text-gray-500 mr-3">
+                              <div 
+                                className="flex items-center relative"
+                                onMouseEnter={() => setSelectedWorker(application)}
+                                onMouseLeave={() => setSelectedWorker(null)}
+                              >
+                                <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center text-gray-500 mr-3 cursor-pointer">
                                   {application.workerName.charAt(0)}
                                 </div>
                                 <div>
-                                  <p className="font-medium">{application.workerName}</p>
-                                  <p className="text-sm text-gray-500">
-                                    {formatDate(application.date)}
+                                  <p className="font-medium cursor-pointer hover:text-[#FB7600]" onClick={() => setSelectedWorker(application)}>
+                                    {application.workerName}
                                   </p>
+                                  <div className="flex items-center gap-2">
+                                    <p className="text-sm text-gray-500">
+                                      {formatDate(application.date)}
+                                    </p>
+                                    {application.estimatedPrice && (
+                                      <p className="text-sm font-medium text-[#FB7600]">
+                                        Εκτίμηση: {application.estimatedPrice}
+                                      </p>
+                                    )}
+                                  </div>
                                 </div>
+                                
+                                {selectedWorker?.id === application.id && (
+                                  <div className="absolute top-0 left-0 mt-12 z-10 w-64 bg-white rounded-lg shadow-lg border border-gray-200 p-4">
+                                    <div className="flex justify-between items-start mb-2">
+                                      <h5 className="font-semibold">{application.workerName}</h5>
+                                      <button 
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setSelectedWorker(null);
+                                        }}
+                                        className="text-gray-400 hover:text-gray-600"
+                                      >
+                                        <FiX />
+                                      </button>
+                                    </div>
+                                    <p className="text-sm text-gray-600 mb-2">{application.profession}</p>
+                                    {application.rating && (
+                                      <div className="mb-2">
+                                        {renderStars(application.rating)}
+                                      </div>
+                                    )}
+                                    {application.completedJobs && (
+                                      <p className="text-sm text-gray-600 mb-2">
+                                        {application.completedJobs} ολοκληρωμένες εργασίες
+                                      </p>
+                                    )}
+                                    {application.bio && (
+                                      <p className="text-sm text-gray-600 mt-2 border-t border-gray-100 pt-2">
+                                        {application.bio}
+                                      </p>
+                                    )}
+                                  </div>
+                                )}
                               </div>
                               {listing.status === "pending" && (
                                 <button

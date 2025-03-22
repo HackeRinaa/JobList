@@ -94,13 +94,21 @@ export default function JobListings() {
     "Καθαρισμοί",
   ];
 
-  const handleApply = (jobId: string, message: string = "") => {
-    console.log(`Applied to job ${jobId} with message: ${message}`);
+  const [successMessage, setSuccessMessage] = useState("");
+
+  const handleApply = (jobId: string, message: string = "", estimatedPrice: string = "") => {
     setJobListings(
       jobListings.map((job) =>
         job.id === jobId ? { ...job, applied: true } : job
       )
     );
+
+    console.log(`Applied to job ${jobId} with message: ${message} and estimated price: ${estimatedPrice}`);
+
+    setSuccessMessage("Η αίτησή σας υποβλήθηκε με επιτυχία!");
+    setTimeout(() => {
+      setSuccessMessage("");
+    }, 3000);
   };
 
   const filteredJobs = jobListings.filter((job) => {
@@ -176,6 +184,12 @@ export default function JobListings() {
           </div>
         )}
       </div>
+
+      {successMessage && (
+        <div className="mt-4 p-4 bg-green-100 text-green-700 rounded-lg">
+          {successMessage}
+        </div>
+      )}
     </div>
   );
 } 

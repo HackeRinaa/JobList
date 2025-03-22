@@ -1,7 +1,6 @@
 "use client";
 
-// components/PersonalDetails.tsx
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 
 interface FormData {
@@ -12,17 +11,17 @@ interface FormData {
   bio: string;
   expertise: string[];
   regions: string[];
-  photo: File | null; // Use File type for the uploaded photo
+  photo: File | null;
 }
 
 interface PersonalDetailsProps {
-  formData: FormData; // Use the defined FormData type
+  formData: FormData;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   handleMultiSelect: (item: string, category: "expertise" | "regions") => void;
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   nextStep: () => void;
   expertiseFields: string[];
-  regions: string[];
+  regions: { name: string; subRegions: string[] }[]; // Updated regions structure
   fileInputRef: React.RefObject<HTMLInputElement>;
 }
 
@@ -36,6 +35,15 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
   regions,
   fileInputRef,
 }) => {
+  const [expandedRegions, setExpandedRegions] = useState<string[]>([]);
+
+  const toggleRegion = (regionName: string) => {
+    setExpandedRegions((prev) =>
+      prev.includes(regionName)
+        ? prev.filter((name) => name !== regionName) // Collapse if already expanded
+        : [...prev, regionName] // Expand if not already expanded
+    );
+  };
   // Function to check if the button should be enabled
   const isButtonDisabled = () => {
     return !(
@@ -124,18 +132,37 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
         <label className="block text-gray-800 mb-2">Περιοχές Εξυπηρέτησης</label>
         <div className="flex flex-wrap gap-2">
           {regions.map((region) => (
-            <button
-              key={region}
-              type="button"
-              onClick={() => handleMultiSelect(region, "regions")}
-              className={`px-3 py-1 rounded-full text-sm ${
-                formData.regions.includes(region)
-                  ? "bg-[#FB7600] text-white"
-                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-              }`}
-            >
-              {region}
-            </button>
+            <div key={region.name} className="flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={() => toggleRegion(region.name)}
+                className={`px-3 py-1 rounded-full text-sm ${
+                  formData.regions.includes(region.name) || region.subRegions.some((sub) => formData.regions.includes(sub))
+                    ? "bg-[#FB7600] text-white"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                {region.name}
+              </button>
+              {expandedRegions.includes(region.name) && (
+                <div className="pl-4 transition-all duration-300 ease-in-out">
+                  {region.subRegions.map((subRegion) => (
+                    <button
+                      key={subRegion}
+                      type="button"
+                      onClick={() => handleMultiSelect(subRegion, "regions")}
+                      className={`px-3 py-1 rounded-full text-sm mt-2 ${
+                        formData.regions.includes(subRegion)
+                          ? "bg-[#FB7600] text-white"
+                          : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                      }`}
+                    >
+                      {subRegion}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           ))}
         </div>
       </div>
@@ -200,8 +227,10 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
       <div className="mt-8 flex justify-end">
         <button
           onClick={nextStep}
-          disabled={isButtonDisabled()} // Disable button based on validation
-          className={`bg-[#FB7600] text-white px-6 py-2 rounded-lg hover:bg-[#E56A00] transition-colors ${isButtonDisabled() ? 'opacity-50 cursor-not-allowed' : ''}`}
+          disabled={isButtonDisabled()}
+          className={`bg-[#FB7600] text-white px-6 py-2 rounded-lg hover:bg-[#E56A00] transition-colors ${
+            isButtonDisabled() ? "opacity-50 cursor-not-allowed" : ""
+          }`}
         >
           Επόμενο
         </button>

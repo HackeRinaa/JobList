@@ -7,6 +7,8 @@ import AddressForm from "@/components/customer/AddressForm";
 import DateSelection from "@/components/customer/DateSelection";
 import Stepper from "@/components/Stepper";
 import FloatingNavbar from "@/components/Navbar";
+import { useRouter } from "next/navigation";
+import { NextPage } from 'next';
 
 interface FormData {
   category: string;
@@ -28,7 +30,7 @@ interface FormData {
   };
 }
 
-export default function CreateListingPage() {
+const CreateListingPage: NextPage = () => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<FormData>({
     category: "",
@@ -54,13 +56,13 @@ export default function CreateListingPage() {
     setFormData((prev) => ({ ...prev, ...data }));
   };
 
+  const router = useRouter();
+
   const nextStep = () => setStep((prev) => Math.min(prev + 1, 4));
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
 
   const handleSubmit = async () => {
-    // Here you would submit the data to your backend
-    console.log("Submitting form data:", formData);
-    // Redirect to success page or dashboard
+    router.push("/signup/customer/");
   };
 
   const steps = [
@@ -129,7 +131,7 @@ export default function CreateListingPage() {
       </div>
     </div>
   );
-}
+};
 
 const StepWrapper = ({ children }: { children: React.ReactNode }) => (
   <motion.div
@@ -140,4 +142,6 @@ const StepWrapper = ({ children }: { children: React.ReactNode }) => (
   >
     {children}
   </motion.div>
-); 
+);
+
+export default CreateListingPage; 
