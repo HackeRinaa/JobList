@@ -1,15 +1,26 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import ChatInterface from "../chat/ChatInterface";
 import { useChatContext } from "@/contexts/ChatContext";
 
 export default function CustomerChat() {
   const { getConversationsByRole, sendMessage, isLoading } = useChatContext();
+  const [initialConversationId, setInitialConversationId] = useState<string | null>(null);
 
   // Mock current customer ID - in a real app, this would come from authentication
   const currentCustomerId = "customer1"; 
 
   // Get conversations for this customer
   const conversations = getConversationsByRole("customer", currentCustomerId);
+
+  // Check for active conversation ID in localStorage (set by message button click)
+  useEffect(() => {
+    const storedConversationId = localStorage.getItem('activeConversationId');
+    if (storedConversationId) {
+      setInitialConversationId(storedConversationId);
+      // Clear it after reading
+      localStorage.removeItem('activeConversationId');
+    }
+  }, []);
 
   // Function to handle sending a message
   const handleSendMessage = (conversationId: string, messageText: string) => {
@@ -42,6 +53,7 @@ export default function CustomerChat() {
           userRole="customer"
           conversations={conversations}
           onSendMessage={handleSendMessage}
+          initialConversationId={initialConversationId}
         />
       )}
     </div>

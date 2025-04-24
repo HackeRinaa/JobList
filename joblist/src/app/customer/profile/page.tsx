@@ -1,5 +1,6 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import FloatingNavbar from "@/components/Navbar";
 import CustomerSidebar from "@/components/customer/CustomerSidebar";
 import CustomerProfile from "@/components/customer/CustomerProfile";
@@ -9,8 +10,34 @@ import SavedProfessionals from "@/components/customer/SavedProfessionals";
 import CustomerChat from "@/components/customer/CustomerChat";
 
 export default function CustomerDashboard() {
+  const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState("profile");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Set initial active tab from URL parameter if available
+  useEffect(() => {
+    const tabParam = searchParams.get("tab");
+    if (tabParam && ["profile", "active", "completed", "saved", "chat"].includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, [searchParams]);
+
+  // Listen for custom event to navigate to chat tab
+  useEffect(() => {
+    const handleNavigateToChat = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      setActiveTab("chat");
+      // You could also store the conversationId for the chat component to use
+      if (customEvent.detail?.conversationId) {
+        localStorage.setItem("activeConversationId", customEvent.detail.conversationId);
+      }
+    };
+
+    window.addEventListener("navigateToChat", handleNavigateToChat);
+    return () => {
+      window.removeEventListener("navigateToChat", handleNavigateToChat);
+    };
+  }, []);
 
   // Render the appropriate component based on the active tab
   const renderContent = () => {

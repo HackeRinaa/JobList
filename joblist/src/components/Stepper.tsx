@@ -1,11 +1,13 @@
-// components/Stepper.tsx
 "use client";
-// components/Stepper.tsx
 import * as React from "react";
 import Box from "@mui/material/Box";
 import Stepper from "@mui/material/Stepper";
 import Step from "@mui/material/Step";
 import StepLabel from "@mui/material/StepLabel";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import LinearProgress from "@mui/material/LinearProgress";
+import Typography from "@mui/material/Typography";
+import Stack from "@mui/material/Stack";
 
 interface StepperProps {
   step: number;
@@ -13,60 +15,91 @@ interface StepperProps {
 }
 
 const CustomStepper: React.FC<StepperProps> = ({ step, steps }) => {
+  const isMobile = useMediaQuery("(max-width: 768px)");
+
   return (
     <Box sx={{ width: "100%", marginBottom: "3rem" }}>
-      <Stepper
-        activeStep={step - 1}
-        alternativeLabel
-        sx={{
-          // Customize the Stepper container
-          padding: "16px", // Add padding
-          borderRadius: "8px", // Rounded corners
-        }}
-      >
-        {steps.map((s, index) => (
-          <Step
-            key={index}
+      {isMobile ? (
+        // Mobile version
+        <Box>
+          <LinearProgress
+            variant="determinate"
+            value={(step / steps.length) * 100}
             sx={{
-              width: "30px",
-              height: "30px",
-              // Customize each Step
-              "& .MuiStepLabel-root": {
-                // Target the StepLabel
-                color: "#FB7600", // Orange text for active/inactive steps
-              },
-              "& .MuiStepIcon-root": {
-                // Target the StepIcon (circle)
-                color: "#ccc", // Default color for inactive steps
-                "&.Mui-completed": {
-                  color: "#4caf50", // Green color for completed steps
-                },
-                "&.Mui-active": {
-                  color: "#FB7600", // Orange color for active steps
-                },
+              height: 10,
+              borderRadius: 5,
+              backgroundColor: "#eee",
+              "& .MuiLinearProgress-bar": {
+                backgroundColor: "#FB7600",
               },
             }}
-          >
-            <StepLabel
+          />
+          <Stack direction="row" spacing={2} justifyContent="space-between" mt={1}>
+            {steps.map((s, index) => (
+              <Typography
+                key={index}
+                variant="caption"
+                sx={{
+                  color: index + 1 === step ? "#FB7600" : "#aaa",
+                  fontWeight: index + 1 === step ? "bold" : "normal",
+                  fontSize: "12px",
+                  textAlign: "center",
+                  flex: 1,
+                }}
+              >
+                {s.label}
+              </Typography>
+            ))}
+          </Stack>
+        </Box>
+      ) : (
+        // Desktop version
+        <Stepper
+          activeStep={step - 1}
+          alternativeLabel
+          sx={{
+            padding: "16px",
+            borderRadius: "8px",
+          }}
+        >
+          {steps.map((s, index) => (
+            <Step
+              key={index}
               sx={{
-                // Customize the StepLabel text
-                "& .MuiStepLabel-label": {
-                  fontSize: "16px", 
-                  fontWeight: "bold", // Bold text
-                  "&.Mui-active": {
-                    color: "#FB7600", // Orange text for active steps
-                  },
+                "& .MuiStepLabel-root": {
+                  color: "#FB7600",
+                },
+                "& .MuiStepIcon-root": {
+                  color: "#ccc",
                   "&.Mui-completed": {
-                    color: "#4caf50", // Green text for completed steps
+                    color: "#4caf50",
+                  },
+                  "&.Mui-active": {
+                    color: "#FB7600",
                   },
                 },
               }}
             >
-              {s.label}
-            </StepLabel>
-          </Step>
-        ))}
-      </Stepper>
+              <StepLabel
+                sx={{
+                  "& .MuiStepLabel-label": {
+                    fontSize: "16px",
+                    fontWeight: "bold",
+                    "&.Mui-active": {
+                      color: "#FB7600",
+                    },
+                    "&.Mui-completed": {
+                      color: "#4caf50",
+                    },
+                  },
+                }}
+              >
+                {s.label}
+              </StepLabel>
+            </Step>
+          ))}
+        </Stepper>
+      )}
     </Box>
   );
 };

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import CategorySelection from "@/components/customer/CategorySelection";
 import JobDetailsForm from "@/components/customer/JobDetailsForm";
@@ -8,7 +8,7 @@ import DateSelection from "@/components/customer/DateSelection";
 import Stepper from "@/components/Stepper";
 import FloatingNavbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { NextPage } from 'next';
 
 interface FormData {
@@ -33,6 +33,18 @@ interface FormData {
 
 const CreateListingPage: NextPage = () => {
   const [step, setStep] = useState(1);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  // Check if the user is already logged in from query parameter
+  useEffect(() => {
+    const loggedInParam = searchParams.get('isLoggedIn');
+    if (loggedInParam === 'true') {
+      setIsLoggedIn(true);
+    }
+  }, [searchParams]);
+  
   const [formData, setFormData] = useState<FormData>({
     category: "",
     jobType: "",
@@ -57,13 +69,36 @@ const CreateListingPage: NextPage = () => {
     setFormData((prev) => ({ ...prev, ...data }));
   };
 
-  const router = useRouter();
-
   const nextStep = () => setStep((prev) => Math.min(prev + 1, 4));
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
 
   const handleSubmit = async () => {
-    router.push("/signup/customer/");
+    // If the user is logged in, redirect to the dashboard
+    if (isLoggedIn) {
+      // In a real app, this would also make an API call to save the listing
+      // Mock saving the listing to localStorage for demo purposes
+      const listings = JSON.parse(localStorage.getItem('activeListings') || '[]');
+      const newListing = {
+        id: `listing_${Date.now()}`,
+        title: formData.jobType || `Εργασία ${formData.category}`,
+        category: formData.category,
+        location: `${formData.address.city}, ${formData.address.postalCode}`,
+        description: formData.jobDescription,
+        postedDate: new Date().toISOString().split('T')[0],
+        budget: "Αναμένεται προσφορά",
+        status: "pending",
+        applications: [],
+      };
+      
+      listings.push(newListing);
+      localStorage.setItem('activeListings', JSON.stringify(listings));
+      
+      // Redirect to customer dashboard with active listings tab
+      router.push('/customer/profile?tab=active');
+    } else {
+      // If not logged in, redirect to signup page
+      router.push("/signup/customer/");
+    }
   };
 
   const steps = [

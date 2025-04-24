@@ -25,20 +25,33 @@ interface ChatInterfaceProps {
   userRole: "customer" | "worker";
   conversations: Conversation[];
   onSendMessage: (conversationId: string, message: string) => void;
+  initialConversationId?: string | null;
 }
 
 export default function ChatInterface({ 
   userRole, 
   conversations, 
-  onSendMessage 
+  onSendMessage,
+  initialConversationId = null
 }: ChatInterfaceProps) {
   const [activeConversation, setActiveConversation] = useState<string | null>(
-    conversations.length > 0 ? conversations[0].id : null
+    initialConversationId || (conversations.length > 0 ? conversations[0].id : null)
   );
   const [messageText, setMessageText] = useState("");
   const [showConversationList, setShowConversationList] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+
+  // Update active conversation if initialConversationId changes
+  useEffect(() => {
+    if (initialConversationId && conversations.some(c => c.id === initialConversationId)) {
+      setActiveConversation(initialConversationId);
+      // On mobile, show the conversation directly
+      if (window.innerWidth < 768) {
+        setShowConversationList(false);
+      }
+    }
+  }, [initialConversationId, conversations]);
 
   // Get the current active conversation object
   const currentConversation = conversations.find(

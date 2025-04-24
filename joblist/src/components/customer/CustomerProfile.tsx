@@ -148,7 +148,7 @@ export default function CustomerProfile() {
               {customerData.name.charAt(0)}
             </div>
             <div>
-              <h3 className="text-xl font-semibold">{customerData.name}</h3>
+              <h3 className="text-xl font-semibold text-gray-500">{customerData.name}</h3>
               <p className="text-gray-600 mt-2">Πελάτης</p>
             </div>
           </div>

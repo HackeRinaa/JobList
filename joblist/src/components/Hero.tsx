@@ -11,7 +11,7 @@ export default function TextParallaxContentExample() {
       <TextParallaxContent
         imgUrl="/bg1.png"
         subheading="Νέα εποχή εύρεσης επαγγελματιών"
-        heading="JOBLIST"
+        heading="JOBLISTING"
       >
         <ExampleContent id={0} />
       </TextParallaxContent>
