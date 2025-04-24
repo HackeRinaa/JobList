@@ -7,6 +7,7 @@ import AddressForm from "@/components/customer/AddressForm";
 import DateSelection from "@/components/customer/DateSelection";
 import Stepper from "@/components/Stepper";
 import FloatingNavbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import { useRouter } from "next/navigation";
 import { NextPage } from 'next';
 
@@ -73,16 +74,16 @@ const CreateListingPage: NextPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white py-12">
+    <div className="min-h-screen bg-white flex flex-col">
       <FloatingNavbar />
-      <div className="mt-20 container mx-auto max-w-3xl px-4">
-        <h1 className="mb-8 text-center text-3xl font-bold text-gray-800">
+      <div className="mt-16 sm:mt-20 container mx-auto max-w-3xl px-4 py-6 sm:py-12 flex-grow">
+        <h1 className="mb-6 sm:mb-8 text-center text-2xl sm:text-3xl font-bold text-gray-800">
           Δημιουργία νέας Εργασίας
         </h1>
 
         <Stepper step={step} steps={steps} />
 
-        <div className="mt-8 rounded-xl bg-white p-6 shadow-lg">
+        <div className="mt-6 sm:mt-8 rounded-xl bg-white p-4 sm:p-6 shadow-lg">
           <AnimatePresence mode="wait">
             {step === 1 && (
               <StepWrapper key="step1">
@@ -129,6 +130,7 @@ const CreateListingPage: NextPage = () => {
           </AnimatePresence>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

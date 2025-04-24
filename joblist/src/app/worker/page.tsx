@@ -3,6 +3,7 @@
 
 import React, { useState, useRef } from "react";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import { useRouter } from "next/navigation";
 import CustomStepper from "@/components/Stepper";
 import PersonalDetails from "@/components/PersonalDetails";
@@ -155,16 +156,16 @@ export default function WorkerSignup() {
   ];
 
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="bg-gray-50 min-h-screen flex flex-col">
       <Navbar />
-      <div className="container mx-auto px-4 py-8 pt-32">
-        <h1 className="text-3xl font-bold text-center text-gray-800 mb-8">
+      <div className="container mx-auto px-4 py-8 pt-24 sm:pt-32 flex-grow">
+        <h1 className="text-2xl sm:text-3xl font-bold text-center text-gray-800 mb-6 sm:mb-8">
           Εγγραφή ως <span className="text-[#FB7600]">Μάστορας</span>
         </h1>
 
         <CustomStepper step={step} steps={steps} />
 
-        <div className="bg-white rounded-lg shadow-lg p-8 max-w-3xl mx-auto">
+        <div className="bg-white rounded-lg shadow-lg p-4 sm:p-8 max-w-3xl mx-auto">
           {step === 1 && (
             <PersonalDetails
               formData={formData}
@@ -198,6 +199,7 @@ export default function WorkerSignup() {
           )}
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

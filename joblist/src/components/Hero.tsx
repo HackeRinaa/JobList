@@ -2,6 +2,7 @@
 import React, { useRef, ReactNode } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { FiArrowUpRight } from "react-icons/fi";
+import Link from "next/link";
 
 // Export TextParallaxContentExample as default
 export default function TextParallaxContentExample() {
@@ -32,7 +33,10 @@ export default function TextParallaxContentExample() {
   );
 }
 
-const IMG_PADDING = 12;
+const IMG_PADDING = { 
+  desktop: 12,
+  mobile: 8
+};
 
 interface TextParallaxContentProps {
   imgUrl: string;
@@ -50,12 +54,13 @@ export const TextParallaxContent = ({
 }: TextParallaxContentProps) => {
   return (
     <div
+      className="px-2 sm:px-4 md:px-6"
       style={{
-        paddingLeft: IMG_PADDING,
-        paddingRight: IMG_PADDING,
+        paddingLeft: `max(${IMG_PADDING.mobile}px, 2vw)`,
+        paddingRight: `max(${IMG_PADDING.mobile}px, 2vw)`,
       }}
     >
-      <div className="relative h-[150vh]">
+      <div className="relative h-[120vh] sm:h-[150vh]">
         <StickyImage imgUrl={imgUrl} />
         <OverlayCopy heading={heading} subheading={subheading} />
       </div>
@@ -85,12 +90,12 @@ export const StickyImage = ({ imgUrl }: StickyImageProps) => {
         backgroundImage: `url(${imgUrl})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
-        height: `calc(100vh - ${IMG_PADDING * 2}px)`,
-        top: IMG_PADDING,
+        height: `calc(100vh - ${IMG_PADDING.mobile * 2}px)`,
+        top: IMG_PADDING.mobile,
         scale,
       }}
       ref={targetRef}
-      className="sticky z-0 overflow-hidden rounded-3xl"
+      className="sticky z-0 overflow-hidden rounded-xl sm:rounded-3xl"
     >
       <motion.div
         className="absolute inset-0 bg-neutral-950/70"
@@ -115,7 +120,7 @@ export const OverlayCopy = ({ subheading, heading }: OverlayCopyProps) => {
     offset: ["start end", "end start"],
   });
 
-  const y = useTransform(scrollYProgress, [0, 1], [250, -250]);
+  const y = useTransform(scrollYProgress, [0, 1], [150, -150]);
   const opacity = useTransform(scrollYProgress, [0.25, 0.5, 0.75], [0, 1, 0]);
 
   return (
@@ -125,14 +130,16 @@ export const OverlayCopy = ({ subheading, heading }: OverlayCopyProps) => {
         opacity,
       }}
       ref={targetRef}
-      className="absolute left-0 top-0 flex h-screen w-full flex-col items-center justify-center text-white"
+      className="absolute left-0 top-0 flex h-screen w-full flex-col items-center justify-center text-white px-4"
     >
-      <p className="text-center text-4xl font-bold md:text-7xl text-[#FB7600]">
+      <p className="text-center text-3xl sm:text-4xl md:text-6xl font-bold text-[#FB7600]">
         {heading}
       </p>
-      <p className="mb-2 text-center text-xl md:mb-4 md:text-3xl text-[#FB7600]">
-        {subheading}
-      </p>
+      {subheading && (
+        <p className="mb-2 text-center text-base sm:text-xl md:text-2xl text-[#FB7600] mt-2">
+          {subheading}
+        </p>
+      )}
     </motion.div>
   );
 };
@@ -140,6 +147,7 @@ export const OverlayCopy = ({ subheading, heading }: OverlayCopyProps) => {
 interface ExampleContentProps {
   id: number;
 }
+
 export const ExampleContent = ({ id }: ExampleContentProps) => {
   const content = [
     {
@@ -147,38 +155,44 @@ export const ExampleContent = ({ id }: ExampleContentProps) => {
       description:
         "Συνδέουμε Ιδιώτες με Εξειδικευμένους Επαγγελματίες Χωρίς Κρυφές Προμήθειες.\nΒρίσκεις τον κατάλληλο επαγγελματία <strong>Εύκολα, Γρήγορα και Δίκαια</strong> και\n<strong>ΧΩΡΙΣ ΜΕΣΑΖΟΝΤΕΣ</strong>.",
       button: "Μάθε περισσότερα",
+      link: "/how-it-works"
     },
     {
       heading: "Ανακάλυψε Πελάτες & Ανάπτυξε τη Δουλειά σου",
       description:
         "✔ Δημιούργησε λογαριασμό & απόκτησε <strong>Άμεση πρόσβαση σε αγγελίες</strong>.\n✔ Αγόρασε <strong>tokens</strong> & ξεκλείδωσε τις <strong>Καλύτερες ευκαιρίες</strong>.\n✔ Χτίσε σχέσεις εμπιστοσύνης – <strong>ΧΩΡΙΣ ΠΡΟΜΗΘΕΙΕΣ</strong>!",
       button: "Γίνε Μέλος",
+      link: "/worker"
     },
     {
       heading: "Η Εργασία που Χρειάζεσε, σε 1 Μόνο Βήμα",
       description:
         "✔ Ανάρτησε <strong>Δωρεάν</strong> την αγγελία σου & λάβε <strong>Προτάσεις από επαγγελματίες</strong>.\n✔ Επίλεξε τον Ιδανικό για τις Ανάγκες σου.\n✔ Επικοινώνησε άμεσα – <strong>ΧΩΡΙΣ ΜΕΣΑΖΟΝΤΕΣ, ΧΩΡΙΣ ΚΡΥΦΕΣ ΧΡΕΩΣΕΙΣ</strong>!",
       button: "Ανέβασε την αγγελία σου",
+      link: "/customer"
     },
   ];
 
   const currentContent = content[id];
 
   return (
-    <div className="mx-auto grid max-w-5xl grid-cols-1 gap-8 px-4 pb-24 pt-12 md:grid-cols-12">
-      <h2 className="col-span-1 text-3xl font-bold md:col-span-4 text-gray-600">
+    <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 sm:gap-8 px-4 pb-12 sm:pb-24 pt-8 sm:pt-12 md:grid-cols-12">
+      <h2 className="col-span-1 text-xl sm:text-2xl font-bold md:col-span-4 text-gray-600">
         {currentContent.heading}
       </h2>
       <div className="col-span-1 md:col-span-8">
         <p
-          className="mb-4 text-xl text-neutral-600 md:text-2xl whitespace-pre-line"
+          className="mb-4 text-base sm:text-lg md:text-xl text-neutral-600 whitespace-pre-line"
           dangerouslySetInnerHTML={{
             __html: currentContent.description.replace(/\n/g, "<br>"),
           }}
         />
-        <button className="w-full rounded-xl bg-[#FB7600] px-6 py-4 text-xl text-white transition-colors hover:bg-[#FB7600] md:w-fit">
+        <Link 
+          href={currentContent.link} 
+          className="block sm:inline-block text-center rounded-lg bg-[#FB7600] px-5 py-3 text-white transition-colors hover:bg-[#E56A00]"
+        >
           {currentContent.button} <FiArrowUpRight className="inline" />
-        </button>
+        </Link>
       </div>
     </div>
   );

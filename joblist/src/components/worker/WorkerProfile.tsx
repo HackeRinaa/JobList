@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
-import { FiEdit2, FiStar } from "react-icons/fi";
+import { FiEdit2, FiStar, FiCamera } from "react-icons/fi";
+import Image from "next/image";
 
 interface WorkerData {
   name: string;
@@ -11,6 +12,7 @@ interface WorkerData {
   skills: string[];
   rating: number;
   reviewCount: number;
+  profileImage?: string;
 }
 
 export default function WorkerProfile() {
@@ -24,6 +26,7 @@ export default function WorkerProfile() {
     skills: ["Ηλεκτρολογικά", "Εγκαταστάσεις", "Επισκευές"],
     rating: 4.8,
     reviewCount: 27,
+    profileImage: undefined, // No image initially
   });
 
   const [formData, setFormData] = useState<WorkerData>(workerData);
@@ -62,6 +65,28 @@ export default function WorkerProfile() {
 
       {isEditing ? (
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Profile picture edit section */}
+          <div className="flex justify-center mb-6">
+            <div className="relative">
+              <div className="w-32 h-32 sm:w-40 sm:h-40 bg-gray-200 rounded-full flex items-center justify-center text-gray-500 text-4xl overflow-hidden">
+                {formData.profileImage ? (
+                  <Image 
+                    src={formData.profileImage} 
+                    alt={formData.name}
+                    width={160} 
+                    height={160}
+                    className="w-full h-full object-cover" 
+                  />
+                ) : (
+                  <span>{formData.name.charAt(0)}</span>
+                )}
+              </div>
+              <div className="absolute bottom-0 right-0 bg-[#FB7600] text-white p-2 rounded-full cursor-pointer">
+                <FiCamera size={20} />
+              </div>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-gray-700 mb-1">Όνομα</label>
@@ -152,19 +177,32 @@ export default function WorkerProfile() {
         </form>
       ) : (
         <div className="space-y-6">
-          <div className="flex items-start">
-            <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center text-gray-500 text-2xl mr-4">
-              {workerData.name.charAt(0)}
+          {/* Profile header with larger image */}
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+            <div className="w-40 h-40 sm:w-48 sm:h-48 bg-gray-200 rounded-full flex items-center justify-center text-gray-500 text-5xl overflow-hidden shadow-md border-4 border-white">
+              {workerData.profileImage ? (
+                <Image 
+                  src={workerData.profileImage} 
+                  alt={workerData.name}
+                  width={192} 
+                  height={192}
+                  className="w-full h-full object-cover" 
+                />
+              ) : (
+                <span>{workerData.name.charAt(0)}</span>
+              )}
             </div>
-            <div>
-              <h3 className="text-xl font-semibold">{workerData.name}</h3>
-              <div className="flex items-center text-yellow-500 mt-1">
+            <div className="text-center sm:text-left">
+              <h3 className="text-2xl font-semibold">{workerData.name}</h3>
+              <div className="flex items-center justify-center sm:justify-start text-yellow-500 mt-2">
                 <FiStar className="fill-current" />
-                <span className="ml-1 text-gray-700">
+                <span className="ml-1 text-lg text-gray-700">
                   {workerData.rating} ({workerData.reviewCount} κριτικές)
                 </span>
               </div>
-              <p className="text-gray-600 mt-2">{workerData.bio}</p>
+              <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                <p className="text-gray-600">{workerData.bio}</p>
+              </div>
             </div>
           </div>
 

@@ -1,12 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 
 export function Section() {
   return (
-    <div className="w-full h-[auto] flex flex-col align-center justify-center">
+    <div className="w-full flex flex-col align-center justify-center">
       <Problem />
       <Solution />
       <HowItWorks />
@@ -20,12 +19,12 @@ export function Section() {
 const Problem = () => {
   const content = [
     {
-      heading: "Χαμένος Χρόνος & \nΑτελείωτα Τηλέφωνα",
+      heading: "Χαμένος Χρόνος & Τηλέφωνα",
       description:
         "Οι παραδοσιακές μέθοδοι αναζήτησης απαιτούν άπειρα τηλεφωνήματα, συστάσεις και δοκιμές, χωρίς καμία εγγύηση επιτυχίας.",
     },
     {
-      heading: "Κρυφές Χρεώσεις &\n Μεσάζοντες",
+      heading: "Κρυφές Χρεώσεις & Μεσάζοντες",
       description:
         "Πλατφόρμες που υπόσχονται βοήθεια συχνά κρύβουν προμήθειες και επιπλέον κόστη, μειώνοντας την αξία της υπηρεσίας που λαμβάνεις.",
     },
@@ -37,76 +36,70 @@ const Problem = () => {
   ];
 
   return (
-    <div className="problem">
-      <h2 className="text-center text-xl md:text-md text-[#FB7600]">
-        ΠΡΟΒΛΗΜΑ
-      </h2>
-      <p className="mt-4 text-center text-2xl font-bold md:text-4xl text-gray-600">
-        Η αναζήτηση του σωστού επαγγελματία είναι δύσκολη.
-      </p>
+    <section className="py-16 px-4">
+      <div className="max-w-6xl mx-auto">
+        <h2 className="text-center text-lg sm:text-xl text-[#FB7600]">
+          ΠΡΟΒΛΗΜΑ
+        </h2>
+        <p className="mt-3 text-center text-xl sm:text-2xl md:text-3xl font-bold text-gray-600">
+          Η αναζήτηση του σωστού επαγγελματία είναι δύσκολη.
+        </p>
 
-      <div className="mt-4 flex w-[80%] h-auto  mx-auto gap-12 items-center justify-center">
-        {content.map((item, index) => (
-          <div key={index} className="flex-1 h-auto max-w-[350px]">
-            <div className="mx-auto flex-1 p-4 text-left text-[#FB7600] max-w-[450px]">
-              <p
-                className="text-xl font-bold  text-[#FB7600]"
-                dangerouslySetInnerHTML={{
-                  __html: item.heading.replace(/\n/g, "<br>"),
-                }}
-              ></p>
-              <p className="text-gray-600 mt-4">{item.description}</p>
+        <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          {content.map((item, index) => (
+            <div key={index} className="bg-white rounded-xl p-6 shadow-sm">
+              <h3 className="text-lg font-bold text-[#FB7600] mb-3">
+                {item.heading}
+              </h3>
+              <p className="text-gray-600 text-sm sm:text-base">{item.description}</p>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
+    </section>
   );
 };
 
 const Solution = () => {
   const content = [
     {
-      heading: "Άμεση & \nΕύκολη Σύνδεση",
+      heading: "Άμεση & Εύκολη Σύνδεση",
       description:
         "Με το JobList, οι ιδιώτες βρίσκουν τον κατάλληλο επαγγελματία χωρίς κόπο, ενώ οι επαγγελματίες αποκτούν πρόσβαση σε νέες ευκαιρίες εργασίας με ένα κλικ.",
     },
     {
-      heading: "Χωρίς Μεσάζοντες,\n Χωρίς Κρυφές Χρεώσεις",
+      heading: "Χωρίς Μεσάζοντες, Χωρίς Κρυφές Χρεώσεις",
       description:
         "Ξεχάστε τις προμήθειες και τα περιττά κόστη. Οι ιδιώτες και οι επαγγελματίες έρχονται σε άμεση επαφή, εξασφαλίζοντας δίκαιες συμφωνίες.",
     },
     {
-      heading: "Διαφάνεια &\n Αξιοπιστία",
+      heading: "Διαφάνεια & Αξιοπιστία",
       description:
         "Με κριτικές και επαληθευμένα προφίλ, οι πελάτες επιλέγουν σωστά, ενώ οι επαγγελματίες χτίζουν τη φήμη τους χωρίς μεσάζοντες.",
     },
   ];
 
   return (
-    <div className="problem mt-20">
-      <h2 className="text-center text-xl md:text-md text-[#FB7600]">ΛΥΣΗ</h2>
-      <p className="mt-4 text-center text-2xl font-bold md:text-4xl text-gray-600">
-        <span className="text-[#FB7600]">JobList</span>– Η Έξυπνη Λύση για
-        Ιδιώτες & Επαγγελματίες!
-      </p>
+    <section className="py-16 px-4 bg-gray-50">
+      <div className="max-w-6xl mx-auto">
+        <h2 className="text-center text-lg sm:text-xl text-[#FB7600]">ΛΥΣΗ</h2>
+        <p className="mt-3 text-center text-xl sm:text-2xl md:text-3xl font-bold text-gray-600">
+          <span className="text-[#FB7600]">JobList</span> – Η Έξυπνη Λύση για
+          Ιδιώτες & Επαγγελματίες!
+        </p>
 
-      <div className="mt-4 flex w-[80%] h-auto  mx-auto gap-12 items-center justify-center">
-        {content.map((item, index) => (
-          <div key={index} className="flex-1 h-auto max-w-[350px]">
-            <div className="mx-auto flex-1 p-4 text-left text-[#FB7600] max-w-[450px]">
-              <p
-                className="text-xl font-bold  text-[#FB7600]"
-                dangerouslySetInnerHTML={{
-                  __html: item.heading.replace(/\n/g, "<br>"),
-                }}
-              ></p>
-              <p className="text-gray-600 mt-4">{item.description}</p>
+        <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          {content.map((item, index) => (
+            <div key={index} className="bg-white rounded-xl p-6 shadow-sm">
+              <h3 className="text-lg font-bold text-[#FB7600] mb-3">
+                {item.heading}
+              </h3>
+              <p className="text-gray-600 text-sm sm:text-base">{item.description}</p>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
+    </section>
   );
 };
 
@@ -146,50 +139,74 @@ const HowItWorks = () => {
   ];
 
   return (
-    <div className="how-it-works mt-20 w-[80%] mx-auto flex flex-col items-center justify-center">
-      <h2 className="text-center text-xl md:text-md text-[#FB7600]">
-        ΠΩΣ ΛΕΙΤΟΥΡΓΕΙ
-      </h2>
-      <p className="mt-4 text-center text-2xl font-bold md:text-4xl text-gray-600">
-        Ξεκίνα σε μόνο 3 Βήματα.
-      </p>
+    <section className="py-16 px-4">
+      <div className="max-w-6xl mx-auto">
+        <h2 className="text-center text-lg sm:text-xl text-[#FB7600]">
+          ΠΩΣ ΛΕΙΤΟΥΡΓΕΙ
+        </h2>
+        <p className="mt-3 text-center text-xl sm:text-2xl md:text-3xl font-bold text-gray-600">
+          Ξεκίνα σε μόνο 3 Βήματα.
+        </p>
 
-      {/* Main Flex Container */}
-      <div className="mt-10 flex justify-center items-start gap-10 h-auto">
-        {/* Left Section - Looking for a Professional */}
-        <div className="w-[40%] text-left">
-          <h3 className="text-[#FB7600] text-lg font-bold mb-4">
-            ΨΑΧΝΩ ΜΑΣΤΟΡΑ
-          </h3>
-          {stepsCustomer.map((step, index) => (
-            <div key={index} className="mb-6 max-w-md">
-              <p className="font-bold text-lg text-gray-600">
-                {index + 1}. {step.title}
-              </p>
-              <p className="text-gray-700">{step.description}</p>
+        <div className="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-10">
+          {/* Left Section - Looking for a Professional */}
+          <div className="bg-white rounded-xl p-6 shadow-sm">
+            <h3 className="text-[#FB7600] text-lg font-bold mb-6 text-center sm:text-left">
+              ΨΑΧΝΩ ΜΑΣΤΟΡΑ
+            </h3>
+            <div className="space-y-6">
+              {stepsCustomer.map((step, index) => (
+                <div key={index} className="flex gap-4">
+                  <div className="flex-shrink-0 w-8 h-8 bg-[#FB7600] bg-opacity-20 rounded-full flex items-center justify-center">
+                    <span className="text-[#FB7600] font-medium">{index + 1}</span>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-700">{step.title}</p>
+                    <p className="text-gray-600 text-sm mt-1">{step.description}</p>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-
-        {/* Vertical Line Divider */}
-        <div className="border-l-2 border-[#FB7600] h-auto min-h-[350px]"></div>
-
-        {/* Right Section - I am a Professional */}
-        <div className="w-[40%] text-left">
-          <h3 className="text-[#FB7600] text-lg font-bold mb-4">
-            ΕΙΜΑΙ ΜΑΣΤΟΡΑΣ
-          </h3>
-          {stepsProfessional.map((step, index) => (
-            <div key={index} className="mb-6 max-w-md">
-              <p className="font-bold text-lg text-gray-600">
-                {index + 1}. {step.title}
-              </p>
-              <p className="text-gray-700">{step.description}</p>
+            <div className="mt-8 flex justify-center">
+              <Link 
+                href="/customer" 
+                className="bg-[#FB7600] text-white px-6 py-2 rounded-lg inline-block font-medium hover:bg-[#E56A00] transition-colors"
+              >
+                Ξεκίνα ως Πελάτης
+              </Link>
             </div>
-          ))}
+          </div>
+
+          {/* Right Section - I am a Professional */}
+          <div className="bg-white rounded-xl p-6 shadow-sm">
+            <h3 className="text-[#FB7600] text-lg font-bold mb-6 text-center sm:text-left">
+              ΕΙΜΑΙ ΜΑΣΤΟΡΑΣ
+            </h3>
+            <div className="space-y-6">
+              {stepsProfessional.map((step, index) => (
+                <div key={index} className="flex gap-4">
+                  <div className="flex-shrink-0 w-8 h-8 bg-[#FB7600] bg-opacity-20 rounded-full flex items-center justify-center">
+                    <span className="text-[#FB7600] font-medium">{index + 1}</span>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-700">{step.title}</p>
+                    <p className="text-gray-600 text-sm mt-1">{step.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-8 flex justify-center">
+              <Link 
+                href="/worker" 
+                className="bg-[#FB7600] text-white px-6 py-2 rounded-lg inline-block font-medium hover:bg-[#E56A00] transition-colors"
+              >
+                Ξεκίνα ως Μάστορας
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 
@@ -217,42 +234,36 @@ const Testimonials = () => {
   ];
 
   return (
-    <div className="mt-20 ">
-      <h2 className="text-center text-xl md:text-md text-[#FB7600]">
-        ΤΙ ΛΕΝΕ ΓΙΑ ΕΜΑΣ
-      </h2>
-      <p className="mt-4 text-center text-2xl font-bold md:text-4xl text-gray-600">
-        Αληθινές εμπειρίες από πελάτες & <br />
-        επαγγελματίες που εμπιστεύτηκαν τη{" "}
-        <span className="text-[#FB7600]">JobList</span>.
-      </p>
+    <section className="py-16 px-4 bg-gray-50">
+      <div className="max-w-6xl mx-auto">
+        <h2 className="text-center text-lg sm:text-xl text-[#FB7600]">
+          ΤΙ ΛΕΝΕ ΓΙΑ ΕΜΑΣ
+        </h2>
+        <p className="mt-3 text-center text-xl sm:text-2xl md:text-3xl font-bold text-gray-600">
+          Αληθινές εμπειρίες από πελάτες &<br className="hidden sm:block" />
+          επαγγελματίες που εμπιστεύτηκαν τη{" "}
+          <span className="text-[#FB7600]">JobList</span>.
+        </p>
 
-      <div className="mt-20 flex flex-wrap justify-center gap-6">
-        {testimonials.map((testimonial, index) => (
-          <div
-            key={index}
-            className="relative bg-[#606C3833] p-6 w-80 rounded-2xl text-center shadow-lg"
-          >
-            {/* Circular Image */}
-            <div className="absolute left-1/2 -top-12 transform -translate-x-1/2">
-              <Image
-                src={testimonial.image}
-                alt={testimonial.name}
-                width={120}
-                height={120}
-                className="rounded-full border-4 border-white shadow-md bg-[#FB7600]"
-              />
+        <div className="mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          {testimonials.map((testimonial, index) => (
+            <div
+              key={index}
+              className="bg-white p-6 rounded-xl shadow-sm text-center"
+            >
+              <div className="flex justify-center mb-4">
+                <div className="w-16 h-16 bg-[#FB7600] rounded-full flex items-center justify-center text-white text-xl font-bold">
+                  {testimonial.name.charAt(0)}
+                </div>
+              </div>
+              <p className="font-semibold text-gray-800">{testimonial.name}</p>
+              <p className="mt-1">{testimonial.stars}</p>
+              <p className="text-gray-600 mt-3 text-sm">{testimonial.review}</p>
             </div>
-
-            <div className="mt-12">
-              <p className="mt-2 font-bold text-gray-800">{testimonial.name}</p>
-              <p className="mt-2">{testimonial.stars}</p>
-              <p className="text-gray-800 mt-2">{testimonial.review}</p>
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
+    </section>
   );
 };
 
@@ -261,99 +272,94 @@ interface FAQItem {
   answer: string;
 }
 
+const faqItems: FAQItem[] = [
+  {
+    question: "Πώς χρεώνεται η υπηρεσία;",
+    answer:
+      "Η εγγραφή και η αναζήτηση επαγγελματιών είναι δωρεάν για τους ιδιώτες. Οι επαγγελματίες εγγράφονται σε ένα από τα συνδρομητικά πακέτα και αποκτούν tokens για να ξεκλειδώνουν αγγελίες.",
+  },
+  {
+    question: "Πώς επιλέγετε τους επαγγελματίες;",
+    answer:
+      "Όλοι οι επαγγελματίες περνούν από έλεγχο ταυτότητας και επαγγελματικών πιστοποιήσεων. Οι αξιολογήσεις των πελατών βοηθούν στη διατήρηση της ποιότητας των υπηρεσιών.",
+  },
+  {
+    question: "Τι γίνεται αν δεν είμαι ικανοποιημένος/η με την υπηρεσία;",
+    answer:
+      "Προσφέρουμε διαδικασία επίλυσης διαφορών και υποστήριξη πελατών για να διασφαλίσουμε την ικανοποίησή σας. Μπορείτε πάντα να επικοινωνήσετε με το τμήμα εξυπηρέτησης για οποιοδήποτε ζήτημα.",
+  },
+];
+
 const FAQ: React.FC = () => {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
-
-  const faqItems: FAQItem[] = [
-    {
-      question: "Πώς επιλέγω τον κατάλληλο επαγγελματία;",
-      answer:
-        "Μετά τη δημοσίευση της αγγελίας σας, οι επαγγελματίες θα σας στέλνουν προτάσεις. Μπορείτε να δείτε τα προφίλ τους, τις κριτικές και τις τιμές τους και να επιλέξετε αυτόν που σας ταιριάζει καλύτερα.",
-    },
-    {
-      question: "Πώς πληρώνω τον επαγγελματία;",
-      answer:
-        "Η πληρωμή γίνεται απευθείας στον επαγγελματία με δική σας συνεννόηση.",
-    },
-    {
-      question: "Τι γίνεται αν δεν βρω επαγγελματία;",
-      answer:
-        "Αν δεν λάβετε προτάσεις, μπορείτε να επεξεργαστείτε την αγγελία σας ή να επικοινωνήσετε με την υποστήριξη μας για βοήθεια.",
-    },
-    {
-        question: "Ποια είναι τα διαθέσιμα πλάνα συνδρομής;",
-        answer:
-          "Έχουμε διάφορα πλάνα ανάλογα με τις ανάγκες σας. Κάθε πλάνο σας προσφέρει έναν ορισμένο αριθμό tokens και πρόσθετα perks, όπως προωθημένη εμφάνιση του προφίλ σας.",
-      },
-    {
-      question: "Τι είναι τα tokens και πώς τα χρησιμοποιώ;",
-      answer:
-        'Τα tokens είναι η "νομισματική" μονάδα της πλατφόρμας. Χρειάζεστε tokens για να ξεκλειδώσετε αγγελίες και να επικοινωνήσετε με πελάτες. Τα tokens αποκτάτε μέσω της επιλογής πλάνου συνδρομής.',
-    },
-    {
-      question: "Τι γίνεται αν τελειώσουν τα tokens μου;",
-      answer:
-        "Μπορείτε να αγοράσετε επιπλέον tokens ή να ανανεώσετε το πλάνο συνδρομής σας ανά πάσα στιγμή.",
-    },
-  ];
 
   const toggleFAQ = (index: number) => {
     setActiveIndex(activeIndex === index ? null : index);
   };
 
   return (
-    <div className="FAQ mt-20">
-      <h2 className="text-center text-xl md:text-md text-[#FB7600]">FAQ</h2>
-      <p className="mt-4 text-center text-2xl font-bold md:text-4xl text-gray-600 mb-10">
-        Συχνές Ερωτήσεις
-      </p>
-      {faqItems.map((item, index) => (
-        <div
-          key={index}
-          className="mb-4 flex flex-col items-center justify-center"
-        >
-          <button
-            onClick={() => toggleFAQ(index)}
-            className="w-[80%] text-left p-4 bg-[#606C3833] rounded-lg focus:outline-none"
-          >
-            <span className="font-semibold text-gray-600 text-lg">{item.question}</span>
-            <span className="float-right text-[#FB7600] text-lg font-bold">
-              {activeIndex === index ? "-" : "+"}
-            </span>
-          </button>
-          {activeIndex === index && (
-            <div className=" w-[80%] p-4  border-b-2 border-l-2 border-r-2 border-[#606C3833] rounded-b-lg">
-              <p className="text-gray-600 text-md text-left w-[800px]">{item.answer}</p>
+    <section className="py-16 px-4">
+      <div className="max-w-3xl mx-auto">
+        <h2 className="text-center text-lg sm:text-xl text-[#FB7600]">
+          ΣΥΧΝΕΣ ΕΡΩΤΗΣΕΙΣ
+        </h2>
+        <p className="mt-3 text-center text-xl sm:text-2xl md:text-3xl font-bold text-gray-600 mb-8">
+          Ό,τι θέλεις να μάθεις για τη <span className="text-[#FB7600]">JobList</span>
+        </p>
+
+        <div className="space-y-4">
+          {faqItems.map((item, index) => (
+            <div 
+              key={index} 
+              className="border border-gray-200 rounded-lg overflow-hidden"
+            >
+              <button
+                className="w-full px-6 py-4 text-left font-medium flex justify-between items-center bg-white"
+                onClick={() => toggleFAQ(index)}
+              >
+                <span className="text-gray-700">{item.question}</span>
+                <span className="text-[#FB7600]">
+                  {activeIndex === index ? "-" : "+"}
+                </span>
+              </button>
+              {activeIndex === index && (
+                <div className="px-6 py-4 bg-gray-50">
+                  <p className="text-gray-600 text-sm">{item.answer}</p>
+                </div>
+              )}
             </div>
-          )}
+          ))}
         </div>
-      ))}
-    </div>
+      </div>
+    </section>
   );
 };
 
-
 const CTA = () => {
   return (
-    <div className="problem mt-20 bg-[#606C3833] pt-20 pb-20">
-      <h2 className="text-center text-xl md:text-md text-[#FB7600]">ΕΤΟΙΜΟΣ ΝΑ ΞΕΚΙΝΗΣΕΙΣ;</h2>
-      <p className="mt-4 text-center text-2xl font-bold md:text-4xl text-gray-600">
-        ΞΕΚΙΝΑ ΤΩΡΑ!
-      </p>
-      <div className="mt-4 flex justify-center gap-12">
-      <Link
-          href="/customer"
-          className="hidden md:block border-[#FB7600] text-[#FB7600] border-2 px-10 py-3 rounded-lg text-lg font-bold hover:bg-[#FB7600] hover:text-white transition-colors"
-        >
-          Ιδιώτης
-        </Link>
-        <Link
-          href="/worker"
-          className="hidden md:block bg-[#FB7600] text-white px-10 py-3 rounded-lg text-lg font-bold hover:bg-[#E56A00] transition-colors"
-        >
-          Μάστορας
-        </Link>
+    <section className="py-16 px-4 bg-[#FB7600] bg-opacity-10">
+      <div className="max-w-4xl mx-auto text-center">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800">
+          Έτοιμοι να ξεκινήσετε;
+        </h2>
+        <p className="mt-4 text-gray-600 max-w-xl mx-auto">
+          Εγγραφείτε σήμερα και ανακαλύψτε έναν καλύτερο τρόπο να συνδέετε ιδιώτες με επαγγελματίες.
+        </p>
+        <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+          <Link
+            href="/customer"
+            className="bg-[#FB7600] text-white px-6 py-3 rounded-lg font-medium hover:bg-[#E56A00] transition-colors"
+          >
+            Βρες Επαγγελματία
+          </Link>
+          <Link
+            href="/worker"
+            className="bg-white text-[#FB7600] border border-[#FB7600] px-6 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+          >
+            Γίνε Μέλος ως Επαγγελματίας
+          </Link>
+        </div>
       </div>
-    </div>
+    </section>
   );
 };
