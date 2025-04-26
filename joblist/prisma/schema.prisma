@@ -12,6 +12,7 @@ model User {
   email         String    @unique
   name          String?
   role          UserRole  @default(CUSTOMER)
+  authId        String?   @unique  // Supabase Auth ID
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   stripeCustomerId String?
@@ -20,6 +21,9 @@ model User {
   jobListings   JobListing[]  @relation("CreatedListings")
   applications  Application[]
   profile       Profile?
+  messages      Message[]
+  reviewsGiven    Review[]  @relation("ReviewsGiven")
+  reviewsReceived Review[]  @relation("ReviewsReceived")
 }
 
 model Profile {
@@ -33,6 +37,10 @@ model Profile {
   completedJobs Int     @default(0)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  phone       String?
+  city        String?
+  postalCode  String?
+  preferences String[]  @default([])
 }
 
 model Subscription {
@@ -77,6 +85,7 @@ model Application {
   updatedAt   DateTime  @updatedAt
   job         JobListing @relation(fields: [jobId], references: [id])
   worker      User      @relation(fields: [workerId], references: [id])
+  messages    Message[]
 }
 
 model TokenPurchase {
@@ -87,6 +96,46 @@ model TokenPurchase {
   stripePaymentId String
   status      PaymentStatus
   createdAt   DateTime  @default(now())
+}
+
+model Message {
+  id            String    @id @default(cuid())
+  content       String
+  senderId      String
+  sender        User      @relation(fields: [senderId], references: [id])
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id])
+  createdAt     DateTime  @default(now())
+}
+
+model Review {
+  id          String    @id @default(cuid())
+  rating      Int       // 1-5 stars
+  comment     String?
+  jobId       String    // Reference to the job being reviewed
+  reviewerId  String    // User leaving the review
+  reviewedId  String    // User being reviewed
+  reviewer    User      @relation("ReviewsGiven", fields: [reviewerId], references: [id])
+  reviewed    User      @relation("ReviewsReceived", fields: [reviewedId], references: [id])
+  createdAt   DateTime  @default(now())
+}
+
+model AdminStats {
+  id                  String    @id @default(cuid())
+  totalUsers          Int       @default(0)
+  activeCustomers     Int       @default(0)
+  activeWorkers       Int       @default(0)
+  adminUsers          Int       @default(0)
+  totalJobs           Int       @default(0)
+  pendingJobs         Int       @default(0)
+  completedJobs       Int       @default(0)
+  canceledJobs        Int       @default(0)
+  totalApplications   Int       @default(0)
+  acceptedApplications Int      @default(0)
+  newUsersToday       Int       @default(0)
+  newJobsToday        Int       @default(0)
+  revenue             Float     @default(0)
+  lastUpdated         DateTime  @default(now())
 }
 
 enum UserRole {
@@ -125,4 +174,4 @@ enum PaymentStatus {
   PENDING
   COMPLETED
   FAILED
-} 
+}

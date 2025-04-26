@@ -46,7 +46,7 @@ const plans = [
     name: "Βασικό",
     price: "29.99",
     period: "μήνα",
-    credits: 50,
+    tokens: 50,
     features: [
       "50 credits για ξεκλείδωμα αγγελιών",
       "Βασικό προφίλ",
@@ -58,7 +58,7 @@ const plans = [
     name: "Επαγγελματικό",
     price: "59.99",
     period: "μήνα",
-    credits: 120,
+    tokens: 120,
     features: [
       "120 credits για ξεκλείδωμα αγγελιών",
       "Προτεραιότητα στις αναζητήσεις",
@@ -71,7 +71,7 @@ const plans = [
     name: "Premium",
     price: "99.99",
     period: "μήνα",
-    credits: 250,
+    tokens: 250,
     features: [
       "250 credits για ξεκλείδωμα αγγελιών",
       "Κορυφαία θέση στις αναζητήσεις",
