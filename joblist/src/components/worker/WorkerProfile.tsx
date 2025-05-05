@@ -95,7 +95,7 @@ export default function WorkerProfile() {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600]"
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600] text-gray-500"
                 required
               />
             </div>
@@ -106,7 +106,7 @@ export default function WorkerProfile() {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600]"
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600] text-gray-500"
                 required
               />
             </div>
@@ -117,7 +117,7 @@ export default function WorkerProfile() {
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600]"
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600] text-gray-500"
                 required
               />
             </div>
@@ -128,7 +128,7 @@ export default function WorkerProfile() {
                 name="address"
                 value={formData.address}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600]"
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600] text-gray-500"
                 required
               />
             </div>
@@ -141,7 +141,7 @@ export default function WorkerProfile() {
               name="skills"
               value={formData.skills.join(", ")}
               onChange={handleSkillChange}
-              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600]"
+              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600] text-gray-500"
             />
           </div>
 
@@ -152,7 +152,7 @@ export default function WorkerProfile() {
               value={formData.bio}
               onChange={handleChange}
               rows={4}
-              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600]"
+              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600] text-gray-500"
             ></textarea>
           </div>
 
@@ -189,11 +189,11 @@ export default function WorkerProfile() {
                   className="w-full h-full object-cover" 
                 />
               ) : (
-                <span>{workerData.name.charAt(0)}</span>
+                <span className="text-gray-500">{workerData.name.charAt(0)}</span>
               )}
             </div>
             <div className="text-center sm:text-left">
-              <h3 className="text-2xl font-semibold">{workerData.name}</h3>
+              <h3 className="text-2xl font-semibold text-gray-500">{workerData.name}</h3>
               <div className="flex items-center justify-center sm:justify-start text-yellow-500 mt-2">
                 <FiStar className="fill-current" />
                 <span className="ml-1 text-lg text-gray-700">

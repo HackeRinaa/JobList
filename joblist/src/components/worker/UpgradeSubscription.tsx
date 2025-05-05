@@ -100,7 +100,7 @@ export default function UpgradeSubscription() {
                 </div>
               )}
               <h3 className="text-xl font-bold text-gray-800">{plan.name}</h3>
-              <p className="text-2xl font-bold mt-2">{plan.price}</p>
+              <p className="text-2xl font-bold mt-2 text-[#FB7600]">{plan.price}</p>
               <p className="text-gray-600 mt-1 mb-4">{plan.description}</p>
               
               {plan.tokenBonus > 0 && (
@@ -142,10 +142,10 @@ export default function UpgradeSubscription() {
       {paymentStep === 1 && selectedPlan && (
         <div className="max-w-md mx-auto">
           <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-            <h3 className="text-xl font-bold mb-4">Στοιχεία Πληρωμής</h3>
-            <p className="mb-4">
+            <h3 className="text-xl font-bold mb-4 text-gray-700">Στοιχεία Πληρωμής</h3>
+            <p className="mb-4 text-gray-500">
               Επιλέξατε το πακέτο:{" "}
-              <span className="font-semibold">
+              <span className="font-semibold text-[#FB7600]">
                 {plans.find(p => p.id === selectedPlan)?.name}
               </span>
             </p>
@@ -155,7 +155,7 @@ export default function UpgradeSubscription() {
                 <label className="block text-gray-700 mb-1">Ονοματεπώνυμο</label>
                 <input
                   type="text"
-                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600]"
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600] text-gray-500"
                 />
               </div>
               
@@ -163,7 +163,7 @@ export default function UpgradeSubscription() {
                 <label className="block text-gray-700 mb-1">Αριθμός Κάρτας</label>
                 <input
                   type="text"
-                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600]"
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600] text-gray-500"
                   placeholder="XXXX XXXX XXXX XXXX"
                 />
               </div>
@@ -173,7 +173,7 @@ export default function UpgradeSubscription() {
                   <label className="block text-gray-700 mb-1">Ημερομηνία Λήξης</label>
                   <input
                     type="text"
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600]"
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600] text-gray-500"
                     placeholder="MM/YY"
                   />
                 </div>
@@ -181,7 +181,7 @@ export default function UpgradeSubscription() {
                   <label className="block text-gray-700 mb-1">CVV</label>
                   <input
                     type="text"
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600]"
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600] text-gray-500"
                     placeholder="XXX"
                   />
                 </div>

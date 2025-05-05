@@ -95,16 +95,16 @@ export default function CompletedJobs() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
           <p className="text-gray-500 text-sm">Συνολικές Εργασίες</p>
-          <p className="text-2xl font-bold">{completedJobs.length}</p>
+          <p className="text-2xl font-bold text-gray-700">{completedJobs.length}</p>
         </div>
         <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
           <p className="text-gray-500 text-sm">Συνολικά Έσοδα</p>
-          <p className="text-2xl font-bold">{totalEarnings}€</p>
+          <p className="text-2xl font-bold text-gray-700">{totalEarnings}€</p>
         </div>
         <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
           <p className="text-gray-500 text-sm">Μέση Αξιολόγηση</p>
           <div className="flex items-center">
-            <p className="text-2xl font-bold mr-2">{averageRating.toFixed(1)}</p>
+            <p className="text-2xl font-bold text-gray-700 mr-2">{averageRating.toFixed(1)}</p>
             <div className="flex">
               {renderStars(Math.round(averageRating))}
             </div>
@@ -120,7 +120,7 @@ export default function CompletedJobs() {
           id="filter"
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          className="w-full md:w-64 p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600]"
+          className="w-full md:w-64 p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600] text-gray-500"
         >
           <option value="all">Όλες οι αξιολογήσεις</option>
           <option value="5">⭐⭐⭐⭐⭐ (5 αστέρια)</option>

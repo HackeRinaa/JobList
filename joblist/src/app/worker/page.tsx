@@ -124,6 +124,7 @@ export default function WorkerSignup() {
       }
     });
   };
+  
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -146,7 +147,7 @@ export default function WorkerSignup() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Form submitted:", formData);
-    router.push("/worker/dashboard");
+    router.push("/worker/profile");
   };
 
   const steps = [

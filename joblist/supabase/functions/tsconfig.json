@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "es2021",
+    "module": "es2020",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "strict": false,
+    "lib": ["es2021", "dom"],
+    "types": ["@supabase/supabase-js"]
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules"]
+} 

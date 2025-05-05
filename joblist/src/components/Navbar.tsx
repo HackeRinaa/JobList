@@ -1,26 +1,33 @@
-"use client"; // Mark this as a Client Component in Next.js
+"use client";
 
 import React, { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { FiMenu, FiX } from "react-icons/fi";
+import Image from "next/image";
+import { usePathname } from "next/navigation"; // Import usePathname
 
 export default function FloatingNavbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const pathname = usePathname(); // Get current path
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
+  // Helper function to check if link is active
+  const isActive = (href) => pathname === href;
 
   return (
     <>
       <motion.nav
-        initial={{ opacity: 0, y: -50 }} // Start off-screen
-        animate={{ opacity: 1, y: 0 }} // Animate into view
-        transition={{ duration: 0.5, ease: "easeOut" }} // Smooth transition
+        initial={{ opacity: 0, y: -50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
         className="fixed top-4 sm:top-6 inset-x-0 mx-auto w-[90%] sm:w-max bg-white border border-gray-200 rounded-full shadow-lg z-50"
       >
         <div className="flex items-center justify-between px-4 sm:px-8 py-2 sm:py-3 gap-4 sm:gap-8">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
+            <Image src="/public/job_listing_logo_150x150_rgb_page-0001-removebg-preview.png" alt="JobListing Logo" width={32} height={32} />
             <span className="text-lg font-semibold text-[#FB7600] font-weight-bold">JobListing</span>
           </Link>
 
@@ -28,31 +35,31 @@ export default function FloatingNavbar() {
           <div className="hidden md:flex items-center gap-8">
             <Link
               href="/"
-              className="text-sm text-gray-600 hover:bg-[#FB7600] hover:text-white hover:rounded-full px-4 py-2 transition-colors"
+              className={`text-sm ${isActive("/") ? "bg-[#FB7600] text-white rounded-full" : "text-gray-600"} px-4 py-2 transition-colors hover:bg-[#FB7600] hover:text-white hover:rounded-full`}
             >
               Αρχική
             </Link>
             <Link
               href="/how-it-works"
-              className="text-sm text-gray-600 hover:bg-[#FB7600] hover:text-white hover:rounded-full px-4 py-2 transition-colors"
+              className={`text-sm ${isActive("/how-it-works") ? "bg-[#FB7600] text-white rounded-full" : "text-gray-600"} px-4 py-2 transition-colors hover:bg-[#FB7600] hover:text-white hover:rounded-full`}
             >
               Πώς Λειτουργεί
             </Link>
             <Link
               href="/worker"
-              className="text-sm text-gray-600 hover:bg-[#FB7600] hover:text-white hover:rounded-full px-4 py-2 transition-colors"
+              className={`text-sm ${isActive("/worker") ? "bg-[#FB7600] text-white rounded-full" : "text-gray-600"} px-4 py-2 transition-colors hover:bg-[#FB7600] hover:text-white hover:rounded-full`}
             >
               Μάστορας
             </Link>
             <Link
               href="/customer"
-              className="text-sm text-gray-600 hover:bg-[#FB7600] hover:text-white hover:rounded-full px-4 py-2 transition-colors"
+              className={`text-sm ${isActive("/customer") ? "bg-[#FB7600] text-white rounded-full" : "text-gray-600"} px-4 py-2 transition-colors hover:bg-[#FB7600] hover:text-white hover:rounded-full`}
             >
               Ιδιώτης
             </Link>
             <Link
               href="/contact"
-              className="text-sm text-gray-600 hover:bg-[#FB7600] hover:text-white hover:rounded-full px-4 py-2 transition-colors"
+              className={`text-sm ${isActive("/contact") ? "bg-[#FB7600] text-white rounded-full" : "text-gray-600"} px-4 py-2 transition-colors hover:bg-[#FB7600] hover:text-white hover:rounded-full`}
             >
               Επικοινωνία
             </Link>
@@ -101,35 +108,35 @@ export default function FloatingNavbar() {
             <div className="flex flex-col space-y-4">
               <Link
                 href="/"
-                className="text-gray-600 hover:text-[#FB7600] py-2 transition-colors"
+                className={`${isActive("/") ? "text-[#FB7600]" : "text-gray-600"} py-2 transition-colors hover:text-[#FB7600]`}
                 onClick={toggleMenu}
               >
                 Αρχική
               </Link>
               <Link
                 href="/how-it-works"
-                className="text-gray-600 hover:text-[#FB7600] py-2 transition-colors"
+                className={`${isActive("/how-it-works") ? "text-[#FB7600]" : "text-gray-600"} py-2 transition-colors hover:text-[#FB7600]`}
                 onClick={toggleMenu}
               >
                 Πώς Λειτουργεί
               </Link>
               <Link
                 href="/worker"
-                className="text-gray-600 hover:text-[#FB7600] py-2 transition-colors"
+                className={`${isActive("/worker") ? "text-[#FB7600]" : "text-gray-600"} py-2 transition-colors hover:text-[#FB7600]`}
                 onClick={toggleMenu}
               >
                 Μάστορας
               </Link>
               <Link
                 href="/customer"
-                className="text-gray-600 hover:text-[#FB7600] py-2 transition-colors"
+                className={`${isActive("/customer") ? "text-[#FB7600]" : "text-gray-600"} py-2 transition-colors hover:text-[#FB7600]`}
                 onClick={toggleMenu}
               >
                 Ιδιώτης
               </Link>
               <Link
                 href="/contact"
-                className="text-gray-600 hover:text-[#FB7600] py-2 transition-colors"
+                className={`${isActive("/contact") ? "text-[#FB7600]" : "text-gray-600"} py-2 transition-colors hover:text-[#FB7600]`}
                 onClick={toggleMenu}
               >
                 Επικοινωνία
