@@ -4,7 +4,6 @@
 import React, { useState, useRef } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { useRouter } from "next/navigation";
 import CustomStepper from "@/components/Stepper";
 import PersonalDetails from "@/components/PersonalDetails";
 import ChoosePlan from "@/components/ChoosePlan";
@@ -107,7 +106,6 @@ export default function WorkerSignup() {
     selectedPlan: null,
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const router = useRouter();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -142,12 +140,6 @@ export default function WorkerSignup() {
 
   const prevStep = () => {
     setStep(step - 1);
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Form submitted:", formData);
-    router.push("/worker/profile");
   };
 
   const steps = [
@@ -195,7 +187,6 @@ export default function WorkerSignup() {
               formData={formData}
               plans={plans}
               prevStep={prevStep}
-              handleSubmit={handleSubmit}
             />
           )}
         </div>

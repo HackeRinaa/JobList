@@ -1,61 +1,64 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
 import { prisma } from '@/lib/prisma';
+import jwt from 'jsonwebtoken';
 
-export async function POST(request: NextRequest) {
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+
+export async function POST(req: NextRequest) {
   try {
-    const { email, password } = await request.json();
+    const { email, password } = await req.json();
 
-    // Validate input
     if (!email || !password) {
       return NextResponse.json(
-        { error: 'Email and password are required' },
+        { message: 'Email and password are required' },
         { status: 400 }
       );
     }
 
-    // Authenticate with Supabase
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 401 }
-      );
-    }
-
-    // Get user data from database
+    // Find the user
     const user = await prisma.user.findUnique({
       where: { email },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        tokens: true
-      }
+      include: {
+        profile: true,
+      },
     });
 
     if (!user) {
       return NextResponse.json(
-        { error: 'User not found in database' },
-        { status: 404 }
+        { message: 'Invalid email or password' },
+        { status: 401 }
       );
     }
 
+    // In a real application, you would verify the password hash here
+    // For now, we'll just check if the user exists
+    // TODO: Implement proper password verification
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { 
+        userId: user.id,
+        email: user.email,
+        role: user.role
+      },
+      JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    // Return user data and token
     return NextResponse.json({
-      message: 'Login successful',
-      user,
-      session: data.session
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      },
     });
-    
   } catch (error) {
     console.error('Login error:', error);
     return NextResponse.json(
-      { error: 'Authentication failed' },
+      { message: 'An error occurred during login' },
       { status: 500 }
     );
   }

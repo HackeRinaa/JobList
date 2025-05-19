@@ -1,27 +1,27 @@
 import Stripe from 'stripe';
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2023-10-16',
+  apiVersion: '2025-02-24.acacia',
 });
 
 export const SUBSCRIPTION_PLANS = {
   BASIC: {
-    name: 'Basic Plan',
+    name: 'Βασικό',
     price_id: process.env.STRIPE_BASIC_PLAN_PRICE_ID!,
-    tokens: 10,
-    price: 9.99,
-  },
-  PREMIUM: {
-    name: 'Premium Plan',
-    price_id: process.env.STRIPE_PREMIUM_PLAN_PRICE_ID!,
-    tokens: 25,
-    price: 19.99,
-  },
-  PROFESSIONAL: {
-    name: 'Professional Plan',
-    price_id: process.env.STRIPE_PROFESSIONAL_PLAN_PRICE_ID!,
     tokens: 50,
     price: 29.99,
+  },
+  PREMIUM: {
+    name: 'Επαγγελματικό',
+    price_id: process.env.STRIPE_PREMIUM_PLAN_PRICE_ID!,
+    tokens: 120,
+    price: 59.99,
+  },
+  PROFESSIONAL: {
+    name: 'Premium',
+    price_id: process.env.STRIPE_PROFESSIONAL_PLAN_PRICE_ID!,
+    tokens: 250,
+    price: 99.99,
   },
 };
 

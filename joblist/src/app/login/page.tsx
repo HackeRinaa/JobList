@@ -1,172 +1,116 @@
 "use client";
 import React, { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FiMail, FiLock, FiUser, FiBriefcase } from "react-icons/fi";
 import FloatingNavbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
-  const [userType, setUserType] = useState<"customer" | "worker">("customer");
+  const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     setIsLoading(true);
-    setError("");
 
     try {
-      // In a real app, you would call your authentication API here
-      // For demo purposes, we'll just simulate a successful login
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Redirect based on user type
-      if (userType === "customer") {
-        router.push("/customer/profile");
-      } else {
-        router.push("/worker/profile");
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
       }
-    } catch {
-      setError("Λάθος email ή κωδικός πρόσβασης. Παρακαλώ δοκιμάστε ξανά.");
+
+      // Store the token and email
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('userEmail', email);
+
+      // Redirect to the appropriate dashboard based on user role
+      if (data.user.role === 'WORKER') {
+        router.replace('/worker/profile');
+      } else {
+        router.replace('/client/dashboard');
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      setError(err instanceof Error ? err.message : 'An error occurred during login');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-50">
       <FloatingNavbar />
-      <div className="flex-grow flex flex-col justify-center py-6 sm:py-12 px-4 sm:px-6 lg:px-8">
-        <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <h2 className="mt-2 text-center text-2xl sm:text-3xl font-medium text-gray-900">
-            Σύνδεση στο λογαριασμό σας
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Ή{" "}
-            <Link href={userType === "customer" ? "/customer" : "/worker"} className="font-medium text-[#FB7600] hover:text-orange-700">
-              δημιουργήστε νέο λογαριασμό
-            </Link>
-          </p>
-        </div>
+      <div className="container mx-auto pt-20 sm:pt-24 px-4 pb-10">
+        <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6 sm:p-8">
+          <h1 className="text-2xl font-bold text-gray-800 mb-6">Σύνδεση</h1>
+          
+          {error && (
+            <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4">
+              {error}
+            </div>
+          )}
 
-        <div className="mt-6 sm:mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="bg-white py-6 sm:py-8 px-4 shadow sm:rounded-lg sm:px-10">
-            <div className="mb-6">
-              <div className="flex border border-gray-300 rounded-md">
-                <button
-                  type="button"
-                  className={`w-1/2 py-2 px-4 rounded-l-md flex justify-center items-center ${
-                    userType === "customer"
-                      ? "bg-[#FB7600] text-white"
-                      : "bg-white text-gray-700 hover:bg-gray-50"
-                  }`}
-                  onClick={() => setUserType("customer")}
-                >
-                  <FiUser className="mr-2" />
-                  Πελάτης
-                </button>
-                <button
-                  type="button"
-                  className={`w-1/2 py-2 px-4 rounded-r-md flex justify-center items-center ${
-                    userType === "worker"
-                      ? "bg-[#FB7600] text-white"
-                      : "bg-white text-gray-700 hover:bg-gray-50"
-                  }`}
-                  onClick={() => setUserType("worker")}
-                >
-                  <FiBriefcase className="mr-2" />
-                  Επαγγελματίας
-                </button>
-              </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="email" className="block text-gray-700 mb-1">
+                Email
+              </label>
+              <input
+                type="email"
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600]"
+                required
+              />
             </div>
 
-            {error && (
-              <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-md text-sm">
-                {error}
-              </div>
-            )}
+            <div>
+              <label htmlFor="password" className="block text-gray-700 mb-1">
+                Κωδικός
+              </label>
+              <input
+                type="password"
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600]"
+                required
+              />
+            </div>
 
-            <form className="space-y-6" onSubmit={handleSubmit}>
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                  Email
-                </label>
-                <div className="mt-1 relative rounded-md shadow-sm">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FiMail className="text-gray-400" />
-                  </div>
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    autoComplete="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FB7600] focus:border-[#FB7600] sm:text-sm"
-                    placeholder="you@example.com"
-                  />
-                </div>
-              </div>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className={`w-full py-2 px-4 rounded-lg text-white font-medium ${
+                isLoading
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-[#FB7600] hover:bg-orange-700'
+              }`}
+            >
+              {isLoading ? 'Σύνδεση...' : 'Σύνδεση'}
+            </button>
+          </form>
 
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                  Κωδικός
-                </label>
-                <div className="mt-1 relative rounded-md shadow-sm">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FiLock className="text-gray-400" />
-                  </div>
-                  <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    autoComplete="current-password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FB7600] focus:border-[#FB7600] sm:text-sm"
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-center mb-3 sm:mb-0">
-                  <input
-                    id="remember_me"
-                    name="remember_me"
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    className="h-4 w-4 text-[#FB7600] focus:ring-[#FB7600] border-gray-300 rounded"
-                  />
-                  <label htmlFor="remember_me" className="ml-2 block text-sm text-gray-700">
-                    Να με θυμάσαι
-                  </label>
-                </div>
-
-                <div className="text-sm">
-                  <Link href="/forgot-password" className="font-medium text-[#FB7600] hover:text-orange-700">
-                    Ξεχάσατε τον κωδικό σας;
-                  </Link>
-                </div>
-              </div>
-
-              <div>
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#FB7600] hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FB7600]"
-                >
-                  {isLoading ? "Σύνδεση..." : "Σύνδεση"}
-                </button>
-              </div>
-            </form>
+          <div className="mt-4 text-center">
+            <p className="text-gray-600">
+              Δεν έχετε λογαριασμό;{' '}
+              <a href="/register" className="text-[#FB7600] hover:underline">
+                Εγγραφείτε
+              </a>
+            </p>
           </div>
         </div>
       </div>

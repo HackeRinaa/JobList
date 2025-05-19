@@ -1,103 +1,147 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { createClient } from '@supabase/supabase-js';
+import jwt from 'jsonwebtoken';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
-// GET /api/worker/profile?userId=
-export async function GET(request: NextRequest) {
+// Helper function to verify JWT token
+function verifyToken(token: string) {
   try {
-    // Get userId from query parameters
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
+    return jwt.verify(token, JWT_SECRET);
+  } catch (error) {
+    return null;
+  }
+}
 
-    if (!userId) {
-      return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
+// Temporary development helper to get a user by email
+const getUserByEmail = async (email: string) => {
+  return await prisma.user.findUnique({
+    where: { email },
+    include: { profile: true }
+  });
+};
+
+// GET endpoint - fetch worker profile
+export async function GET(req: NextRequest) {
+  try {
+    // Get the authorization header
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json(
+        { message: 'Unauthorized' },
+        { status: 401 }
+      );
     }
 
-    // Fetch user profile from database
+    // Extract and verify the token
+    const token = authHeader.split(' ')[1];
+    const decoded = verifyToken(token);
+    if (!decoded || typeof decoded === 'string') {
+      return NextResponse.json(
+        { message: 'Invalid token' },
+        { status: 401 }
+      );
+    }
+
+    // Get user data
     const user = await prisma.user.findUnique({
-      where: { id: userId },
+      where: { email: decoded.email },
       include: {
         profile: true,
       },
     });
 
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json(
+        { message: 'User not found' },
+        { status: 404 }
+      );
     }
 
-    // Check if the user is a worker
-    if (user.role !== 'WORKER') {
-      return NextResponse.json({ error: 'User is not a worker' }, { status: 403 });
-    }
-
-    // Return the profile data
-    return NextResponse.json(user);
+    // Return user data
+    return NextResponse.json({
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+      },
+      profile: user.profile,
+      rating: user.profile?.rating || 0,
+      reviewCount: 0, // TODO: Implement review count
+    });
   } catch (error) {
-    console.error('Error fetching worker profile:', error);
+    console.error('Error fetching profile:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch worker profile' },
+      { message: 'An error occurred while fetching the profile' },
       { status: 500 }
     );
   }
 }
 
-// PUT /api/worker/profile
-export async function PUT(request: NextRequest) {
+// PUT endpoint - update worker profile
+export async function PUT(req: NextRequest) {
   try {
-    const { id, name, email, profile } = await request.json();
-
-    // Authenticate request using Supabase
-    const { data: { session }, error: authError } = await supabase.auth.getSession();
-    
-    if (authError || !session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Get the authorization header
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json(
+        { message: 'Unauthorized' },
+        { status: 401 }
+      );
     }
 
-    // Get user from database to verify ownership
-    const existingUser = await prisma.user.findUnique({
-      where: { id },
-      include: { profile: true }
-    });
-
-    if (!existingUser) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    // Extract and verify the token
+    const token = authHeader.split(' ')[1];
+    const decoded = verifyToken(token);
+    if (!decoded || typeof decoded === 'string') {
+      return NextResponse.json(
+        { message: 'Invalid token' },
+        { status: 401 }
+      );
     }
 
-    // Verify that the authenticated user is updating their own profile
-    if (existingUser.authId !== session.user.id) {
-      return NextResponse.json({ error: 'Unauthorized to update this profile' }, { status: 403 });
-    }
+    // Get request body
+    const { name, bio, phone, preferences } = await req.json();
 
-    // Update user and profile
+    // Update user data
     const updatedUser = await prisma.user.update({
-      where: { id },
+      where: { email: decoded.email },
       data: {
         name,
-        email,
         profile: {
-          update: {
-            phone: profile.phone,
-            location: profile.location,
-            bio: profile.bio,
-            profession: profile.profession,
-            city: profile.city,
-            postalCode: profile.postalCode
-          }
-        }
+          upsert: {
+            create: {
+              bio,
+              phone,
+              preferences,
+            },
+            update: {
+              bio,
+              phone,
+              preferences,
+            },
+          },
+        },
       },
       include: {
-        profile: true
-      }
+        profile: true,
+      },
     });
 
-    return NextResponse.json(updatedUser);
+    return NextResponse.json({
+      message: 'Profile updated successfully',
+      user: {
+        id: updatedUser.id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+      },
+      profile: updatedUser.profile,
+    });
   } catch (error) {
-    console.error('Error updating worker profile:', error);
-    return NextResponse.json({ error: 'Failed to update profile' }, { status: 500 });
+    console.error('Error updating profile:', error);
+    return NextResponse.json(
+      { message: 'An error occurred while updating the profile' },
+      { status: 500 }
+    );
   }
 } 

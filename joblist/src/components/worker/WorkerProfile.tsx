@@ -1,241 +1,327 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FiEdit2, FiStar, FiCamera } from "react-icons/fi";
-import Image from "next/image";
+import { UserData } from "@/types/user";
+import { useRouter } from "next/navigation";
 
-interface WorkerData {
-  name: string;
-  email: string;
-  phone: string;
-  address: string;
-  bio: string;
-  skills: string[];
-  rating: number;
-  reviewCount: number;
-  profileImage?: string;
+interface WorkerProfileProps {
+  userData: UserData;
 }
 
-export default function WorkerProfile() {
+export default function WorkerProfile({ userData }: WorkerProfileProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [workerData, setWorkerData] = useState<WorkerData>({
-    name: "Γιώργος Παπαδόπουλος",
-    email: "giorgos@example.com",
-    phone: "6912345678",
-    address: "Αθήνα, Ελλάδα",
-    bio: "Επαγγελματίας ηλεκτρολόγος με 10+ χρόνια εμπειρίας σε οικιακές και επαγγελματικές εγκαταστάσεις.",
-    skills: ["Ηλεκτρολογικά", "Εγκαταστάσεις", "Επισκευές"],
-    rating: 4.8,
-    reviewCount: 27,
-    profileImage: undefined, // No image initially
+  const [formData, setFormData] = useState({
+    name: userData.user.name,
+    email: userData.user.email,
+    phone: userData.profile?.phone || '',
+    bio: userData.profile?.bio || '',
+    skills: userData.profile?.preferences || [],
   });
-
-  const [formData, setFormData] = useState<WorkerData>(workerData);
+  const [rating, setRating] = useState(userData.rating || 0);
+  const [reviewCount, setReviewCount] = useState(userData.reviewCount || 0);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [newSkill, setNewSkill] = useState('');
+  const router = useRouter();
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSkillChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const skills = e.target.value.split(",").map((skill) => skill.trim());
-    setFormData({ ...formData, skills });
+  const handleAddSkill = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && newSkill.trim()) {
+      e.preventDefault();
+      setFormData((prev) => ({
+        ...prev,
+        skills: [...prev.skills, newSkill.trim()],
+      }));
+      setNewSkill('');
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleRemoveSkill = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      skills: prev.skills.filter((_, i) => i !== index),
+    }));
+  };
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          router.push('/login');
+          return;
+        }
+
+        const response = await fetch('/api/worker/profile', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            router.push('/login');
+            return;
+          }
+          throw new Error('Failed to fetch profile');
+        }
+
+        const data = await response.json();
+        setFormData({
+          name: data.user.name || '',
+          email: data.user.email || '',
+          bio: data.profile?.bio || '',
+          phone: data.profile?.phone || '',
+          skills: data.profile?.preferences || [],
+        });
+        setRating(data.rating || 0);
+        setReviewCount(data.reviewCount || 0);
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+        setError('Failed to load profile data');
+      }
+    };
+
+    fetchProfile();
+  }, [router]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setWorkerData(formData);
-    setIsEditing(false);
+    setError('');
+    setIsLoading(true);
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        router.push('/login');
+        return;
+      }
+
+      const response = await fetch('/api/worker/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          router.push('/login');
+          return;
+        }
+        throw new Error('Failed to update profile');
+      }
+
+      const data = await response.json();
+      setFormData({
+        name: data.user.name || '',
+        email: data.user.email || '',
+        bio: data.profile?.bio || '',
+        phone: data.profile?.phone || '',
+        skills: data.profile?.preferences || [],
+      });
+      setSuccess('Profile updated successfully');
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      setError('Failed to update profile');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Το Προφίλ μου</h2>
-        {!isEditing && (
-          <button
-            onClick={() => setIsEditing(true)}
-            className="flex items-center text-[#FB7600] hover:text-orange-700"
-          >
-            <FiEdit2 className="mr-1" /> Επεξεργασία
-          </button>
-        )}
-      </div>
+    <div className="max-w-4xl mx-auto p-6">
+      <div className="bg-white rounded-lg shadow-lg p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold text-gray-800">Worker Profile</h1>
+          {!isEditing ? (
+            <button
+              onClick={() => setIsEditing(true)}
+              className="flex items-center text-blue-600 hover:text-blue-800"
+            >
+              <FiEdit2 className="mr-2" />
+              Edit Profile
+            </button>
+          ) : (
+            <div className="flex gap-2">
+              <button
+                onClick={() => setIsEditing(false)}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                disabled={isLoading}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmit}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
+          )}
+        </div>
 
-      {isEditing ? (
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Profile picture edit section */}
-          <div className="flex justify-center mb-6">
-            <div className="relative">
-              <div className="w-32 h-32 sm:w-40 sm:h-40 bg-gray-200 rounded-full flex items-center justify-center text-gray-500 text-4xl overflow-hidden">
-                {formData.profileImage ? (
-                  <Image 
-                    src={formData.profileImage} 
-                    alt={formData.name}
-                    width={160} 
-                    height={160}
-                    className="w-full h-full object-cover" 
+        {error && (
+          <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-lg">
+            {error}
+          </div>
+        )}
+
+        {success && (
+          <div className="mb-4 p-4 bg-green-50 text-green-700 rounded-lg">
+            {success}
+          </div>
+        )}
+
+        <div className="flex items-start space-x-6">
+          <div className="relative">
+            <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center">
+              <FiCamera className="w-8 h-8 text-gray-400" />
+            </div>
+            {isEditing && (
+              <button className="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700">
+                <FiCamera className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+
+          <div className="flex-1">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Name
+                </label>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 ) : (
-                  <span>{formData.name.charAt(0)}</span>
+                  <p className="text-gray-900">{formData.name}</p>
                 )}
               </div>
-              <div className="absolute bottom-0 right-0 bg-[#FB7600] text-white p-2 rounded-full cursor-pointer">
-                <FiCamera size={20} />
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email
+                </label>
+                <p className="text-gray-900">{formData.email}</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone
+                </label>
+                {isEditing ? (
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                ) : (
+                  <p className="text-gray-900">{formData.phone}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Rating
+                </label>
+                <div className="flex items-center">
+                  <div className="flex items-center">
+                    {[...Array(5)].map((_, i) => (
+                      <FiStar
+                        key={i}
+                        className={`w-5 h-5 ${
+                          i < rating ? 'text-yellow-400' : 'text-gray-300'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className="ml-2 text-gray-600">
+                    ({reviewCount} reviews)
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-gray-700 mb-1">Όνομα</label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600] text-gray-500"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-gray-700 mb-1">Email</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600] text-gray-500"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-gray-700 mb-1">Τηλέφωνο</label>
-              <input
-                type="tel"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600] text-gray-500"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-gray-700 mb-1">Διεύθυνση</label>
-              <input
-                type="text"
-                name="address"
-                value={formData.address}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600] text-gray-500"
-                required
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-gray-700 mb-1">Δεξιότητες (χωρισμένες με κόμμα)</label>
-            <input
-              type="text"
-              name="skills"
-              value={formData.skills.join(", ")}
-              onChange={handleSkillChange}
-              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600] text-gray-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-gray-700 mb-1">Βιογραφικό</label>
-            <textarea
-              name="bio"
-              value={formData.bio}
-              onChange={handleChange}
-              rows={4}
-              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600] text-gray-500"
-            ></textarea>
-          </div>
-
-          <div className="flex justify-end space-x-3">
-            <button
-              type="button"
-              onClick={() => {
-                setFormData(workerData);
-                setIsEditing(false);
-              }}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-            >
-              Ακύρωση
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-[#FB7600] text-white rounded-lg hover:bg-orange-700"
-            >
-              Αποθήκευση
-            </button>
-          </div>
-        </form>
-      ) : (
-        <div className="space-y-6">
-          {/* Profile header with larger image */}
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-            <div className="w-40 h-40 sm:w-48 sm:h-48 bg-gray-200 rounded-full flex items-center justify-center text-gray-500 text-5xl overflow-hidden shadow-md border-4 border-white">
-              {workerData.profileImage ? (
-                <Image 
-                  src={workerData.profileImage} 
-                  alt={workerData.name}
-                  width={192} 
-                  height={192}
-                  className="w-full h-full object-cover" 
+            <div className="mt-6">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Bio
+              </label>
+              {isEditing ? (
+                <textarea
+                  name="bio"
+                  value={formData.bio}
+                  onChange={handleChange}
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               ) : (
-                <span className="text-gray-500">{workerData.name.charAt(0)}</span>
+                <p className="text-gray-900 whitespace-pre-wrap">{formData.bio}</p>
               )}
             </div>
-            <div className="text-center sm:text-left">
-              <h3 className="text-2xl font-semibold text-gray-500">{workerData.name}</h3>
-              <div className="flex items-center justify-center sm:justify-start text-yellow-500 mt-2">
-                <FiStar className="fill-current" />
-                <span className="ml-1 text-lg text-gray-700">
-                  {workerData.rating} ({workerData.reviewCount} κριτικές)
-                </span>
-              </div>
-              <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                <p className="text-gray-600">{workerData.bio}</p>
-              </div>
-            </div>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="font-semibold text-gray-700 mb-2">Στοιχεία Επικοινωνίας</h4>
-              <p className="text-gray-600">
-                <strong>Email:</strong> {workerData.email}
-              </p>
-              <p className="text-gray-600">
-                <strong>Τηλέφωνο:</strong> {workerData.phone}
-              </p>
-              <p className="text-gray-600">
-                <strong>Διεύθυνση:</strong> {workerData.address}
-              </p>
-            </div>
-
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="font-semibold text-gray-700 mb-2">Δεξιότητες</h4>
-              <div className="flex flex-wrap gap-2">
-                {workerData.skills.map((skill, index) => (
-                  <span
-                    key={index}
-                    className="bg-orange-100 text-[#FB7600] px-3 py-1 rounded-full text-sm"
-                  >
-                    {skill}
-                  </span>
-                ))}
-              </div>
+            <div className="mt-6">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Skills
+              </label>
+              {isEditing ? (
+                <div className="flex flex-wrap gap-2">
+                  {formData.skills.map((skill, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center bg-blue-100 text-blue-800 px-3 py-1 rounded-full"
+                    >
+                      <span>{skill}</span>
+                      <button
+                        onClick={() => handleRemoveSkill(index)}
+                        className="ml-2 text-blue-600 hover:text-blue-800"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                  <input
+                    type="text"
+                    value={newSkill}
+                    onChange={(e) => setNewSkill(e.target.value)}
+                    onKeyPress={handleAddSkill}
+                    placeholder="Add a skill"
+                    className="px-3 py-1 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {formData.skills.map((skill, index) => (
+                    <span
+                      key={index}
+                      className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full"
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 } 

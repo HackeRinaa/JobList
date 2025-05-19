@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useContext } from "react";
 import { FiUser, FiCreditCard, FiList, FiCheckCircle, FiArrowUp, FiMessageCircle } from "react-icons/fi";
+import { UserContext } from "@/app/worker/profile/page";
 
 interface WorkerSidebarProps {
   activeTab: string;
@@ -7,6 +8,8 @@ interface WorkerSidebarProps {
 }
 
 export default function WorkerSidebar({ activeTab, setActiveTab }: WorkerSidebarProps) {
+  const userData = useContext(UserContext);
+  
   const menuItems = [
     { id: "profile", label: "Προφίλ", icon: <FiUser /> },
     { id: "credits", label: "Credits", icon: <FiCreditCard /> },
@@ -20,6 +23,12 @@ export default function WorkerSidebar({ activeTab, setActiveTab }: WorkerSidebar
     <div className="w-full md:w-64 bg-white rounded-lg shadow-md p-4 mb-4 md:mb-0">
       <div className="mb-4 md:mb-6">
         <h2 className="text-xl font-bold text-gray-800">Πίνακας Ελέγχου</h2>
+        {userData && (
+          <div className="mt-2 text-sm text-gray-600">
+            <p className="font-medium">{userData.user.name}</p>
+            <p className="text-gray-500">{userData.user.email}</p>
+          </div>
+        )}
       </div>
       <nav>
         <ul className="flex flex-row md:flex-col overflow-x-auto md:overflow-visible gap-2 md:gap-0 md:space-y-2 pb-2 md:pb-0">
