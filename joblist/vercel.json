@@ -1,22 +1,12 @@
 {
-  "framework": "nextjs",
-  "buildCommand": "NEXT_DISABLE_ESLINT=1 SKIP_TYPE_CHECK=1 OUTPUT_EXPORT=true prisma generate && next build",
+  "buildCommand": "npm run vercel-build",
   "installCommand": "npm install",
-  "build": {
-    "env": {
-      "NEXT_TELEMETRY_DISABLED": "1",
-      "NEXT_DISABLE_ESLINT": "1",
-      "SKIP_TYPE_CHECK": "1",
-      "OUTPUT_EXPORT": "true",
-      "TWILIO_ACCOUNT_SID": "AC000000000000000000000000000000000",
-      "TWILIO_AUTH_TOKEN": "0000000000000000000000000000000000",
-      "TWILIO_PHONE_NUMBER": "+10000000000"
-    }
-  },
-  "outputDirectory": ".next",
   "regions": ["fra1"],
   "env": {
     "NEXTAUTH_URL": "https://${VERCEL_URL}",
-    "NEXTAUTH_SECRET": "${NEXTAUTH_SECRET}"
+    "NEXTAUTH_SECRET": "${NEXTAUTH_SECRET}",
+    "TWILIO_ACCOUNT_SID": "AC000000000000000000000000000000000",
+    "TWILIO_AUTH_TOKEN": "0000000000000000000000000000000000",
+    "TWILIO_PHONE_NUMBER": "+10000000000"
   }
 } 
