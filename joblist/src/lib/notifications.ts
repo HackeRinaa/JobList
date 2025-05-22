@@ -2,9 +2,17 @@ import twilio from 'twilio';
 import nodemailer from 'nodemailer';
 import { prisma } from './prisma';
 
-// Initialize Twilio client
-const twilioClient = process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN
-  ? twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
+// Initialize Twilio client with validation
+const isTwilioConfigured = () => {
+  return process.env.TWILIO_ACCOUNT_SID && 
+         process.env.TWILIO_AUTH_TOKEN && 
+         process.env.TWILIO_PHONE_NUMBER &&
+         process.env.TWILIO_ACCOUNT_SID.startsWith('AC');
+};
+
+// Only create the client if properly configured
+const twilioClient = isTwilioConfigured() 
+  ? twilio(process.env.TWILIO_ACCOUNT_SID!, process.env.TWILIO_AUTH_TOKEN!)
   : null;
 
 // Initialize email transporter
@@ -24,12 +32,17 @@ const emailTransporter = nodemailer.createTransport({
  * @param message The message to send
  */
 export async function sendSMS(phoneNumber: string, message: string) {
-  if (!twilioClient) {
-    console.warn('Twilio client not configured. SMS not sent.');
+  if (!twilioClient || !isTwilioConfigured()) {
+    console.warn('Twilio client not configured properly. SMS not sent.');
     return false;
   }
 
   try {
+    if (!process.env.TWILIO_PHONE_NUMBER) {
+      console.warn('Twilio phone number not configured. SMS not sent.');
+      return false;
+    }
+    
     await twilioClient.messages.create({
       body: message,
       from: process.env.TWILIO_PHONE_NUMBER,
