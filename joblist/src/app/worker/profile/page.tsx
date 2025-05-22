@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, createContext } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import FloatingNavbar from "@/components/Navbar";
 import WorkerSidebar from "@/components/worker/WorkerSidebar";
@@ -10,9 +10,7 @@ import CompletedJobs from "@/components/worker/CompletedJobs";
 import UpgradeSubscription from "@/components/worker/UpgradeSubscription";
 import WorkerChat from "@/components/worker/WorkerChat";
 import { UserData } from "@/types/user";
-
-// Create the context
-export const UserContext = createContext<UserData | null>(null);
+import { UserContext } from "@/contexts/WorkerContext";
 
 export default function WorkerDashboard() {
   const [activeTab, setActiveTab] = useState("profile");

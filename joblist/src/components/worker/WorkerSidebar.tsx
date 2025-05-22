@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { FiUser, FiCreditCard, FiList, FiCheckCircle, FiArrowUp, FiMessageCircle } from "react-icons/fi";
-import { UserContext } from "@/app/worker/profile/page";
+import { UserContext } from "@/contexts/WorkerContext";
 
 interface WorkerSidebarProps {
   activeTab: string;

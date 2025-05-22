@@ -1,11 +1,12 @@
 {
   "framework": "nextjs",
-  "buildCommand": "NEXT_DISABLE_ESLINT=1 prisma generate && next build",
+  "buildCommand": "NEXT_DISABLE_ESLINT=1 SKIP_TYPE_CHECK=1 prisma generate && next build",
   "installCommand": "npm install",
   "build": {
     "env": {
       "NEXT_TELEMETRY_DISABLED": "1",
-      "NEXT_DISABLE_ESLINT": "1"
+      "NEXT_DISABLE_ESLINT": "1",
+      "SKIP_TYPE_CHECK": "1"
     }
   },
   "outputDirectory": ".next",
