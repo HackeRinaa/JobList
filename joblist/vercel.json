@@ -2,12 +2,6 @@
   "framework": "nextjs",
   "buildCommand": "NEXT_DISABLE_ESLINT=1 prisma generate && next build",
   "installCommand": "npm install",
-  "builds": [
-    {
-      "src": "joblist/next.config.ts",
-      "use": "@vercel/next"
-    }
-  ],
   "build": {
     "env": {
       "NEXT_TELEMETRY_DISABLED": "1",
