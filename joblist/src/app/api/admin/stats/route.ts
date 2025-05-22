@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getUser } from '@/lib/supabase';
 
-export async function GET(_request: NextRequest) {
+export async function GET() {
   try {
     // Authenticate user
     const user = await getUser();

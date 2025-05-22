@@ -14,7 +14,7 @@ declare module 'jsonwebtoken' {
   export function decode(
     token: string,
     options?: DecodeOptions
-  ): null | { [key: string]: any } | string;
+  ): null | { [key: string]: unknown } | string;
 
   export interface SignOptions {
     algorithm?: string;

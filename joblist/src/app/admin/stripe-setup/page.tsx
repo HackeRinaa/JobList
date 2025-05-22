@@ -4,9 +4,36 @@ import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
+interface StripeConfig {
+  [key: string]: string;
+}
+
+interface StripePlan {
+  name: string;
+  price: string;
+  tokens: number;
+  price_id: string;
+}
+
+interface PriceVerification {
+  success: boolean;
+  price_id: string;
+  details: string;
+}
+
+interface StripeData {
+  config: StripeConfig;
+  plans: {
+    [key: string]: StripePlan;
+  };
+  price_verification: {
+    [key: string]: PriceVerification;
+  };
+}
+
 export default function StripeSetupPage() {
   const [isLoading, setIsLoading] = useState(true);
-  const [stripeData, setStripeData] = useState<any>(null);
+  const [stripeData, setStripeData] = useState<StripeData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -55,7 +82,7 @@ export default function StripeSetupPage() {
               <h2 className="text-xl font-semibold text-gray-800 mb-4">Environment Configuration</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {Object.entries(stripeData.config).map(([key, value]: [string, any]) => (
+                {stripeData && Object.entries(stripeData.config).map(([key, value]: [string, string]) => (
                   <div key={key} className={`p-4 rounded-lg ${value === 'Configured' ? 'bg-green-100' : 'bg-red-100'}`}>
                     <p className="font-medium">{key.replace(/_/g, ' ').toUpperCase()}</p>
                     <p className={value === 'Configured' ? 'text-green-700' : 'text-red-700'}>{value}</p>
@@ -68,7 +95,7 @@ export default function StripeSetupPage() {
               <h2 className="text-xl font-semibold text-gray-800 mb-4">Subscription Plans</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {Object.entries(stripeData.plans).map(([key, plan]: [string, any]) => (
+                {stripeData && Object.entries(stripeData.plans).map(([key, plan]: [string, StripePlan]) => (
                   <div key={key} className="p-4 rounded-lg border">
                     <h3 className="font-bold text-lg mb-2">{plan.name}</h3>
                     <p className="text-gray-600 mb-1">{plan.price}€ / month</p>
@@ -85,7 +112,7 @@ export default function StripeSetupPage() {
               <h2 className="text-xl font-semibold text-gray-800 mb-4">Price Verification</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {Object.entries(stripeData.price_verification).map(([key, data]: [string, any]) => (
+                {stripeData && Object.entries(stripeData.price_verification).map(([key, data]: [string, PriceVerification]) => (
                   <div 
                     key={key} 
                     className={`p-4 rounded-lg ${data.success ? 'bg-green-100' : 'bg-red-100'}`}
@@ -122,9 +149,9 @@ export default function StripeSetupPage() {
                   <h3 className="font-semibold text-lg mb-2">2. Update Environment Variables</h3>
                   <p className="mb-2">Update your .env file with the correct price IDs:</p>
                   <pre className="bg-gray-800 text-white p-3 rounded-lg text-sm overflow-x-auto">
-                    STRIPE_BASIC_PLAN_PRICE_ID="price_xxxx"<br/>
-                    STRIPE_PREMIUM_PLAN_PRICE_ID="price_yyyy"<br/>
-                    STRIPE_PROFESSIONAL_PLAN_PRICE_ID="price_zzzz"
+                    STRIPE_BASIC_PLAN_PRICE_ID=&quot;price_xxxx&quot;<br/>
+                    STRIPE_PREMIUM_PLAN_PRICE_ID=&quot;price_yyyy&quot;<br/>
+                    STRIPE_PROFESSIONAL_PLAN_PRICE_ID=&quot;price_zzzz&quot;
                   </pre>
                 </div>
                 

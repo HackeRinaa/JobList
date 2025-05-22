@@ -150,8 +150,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Determine who is being reviewed
-    let reviewerId = dbUser.id;
-    let reviewedId = isClient ? job.assignedWorkerId : job.customerId;
+    const reviewerId = dbUser.id;
+    const reviewedId = isClient ? job.assignedWorkerId : job.customerId;
 
     // Check if this user has already left a review for this job
     const existingReview = await prisma.review.findFirst({
