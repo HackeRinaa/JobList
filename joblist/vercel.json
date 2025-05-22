@@ -1,12 +1,5 @@
 {
   "buildCommand": "npm run vercel-build",
   "installCommand": "npm install",
-  "regions": ["fra1"],
-  "env": {
-    "NEXTAUTH_URL": "https://${VERCEL_URL}",
-    "NEXTAUTH_SECRET": "${NEXTAUTH_SECRET}",
-    "TWILIO_ACCOUNT_SID": "AC000000000000000000000000000000000",
-    "TWILIO_AUTH_TOKEN": "0000000000000000000000000000000000",
-    "TWILIO_PHONE_NUMBER": "+10000000000"
-  }
+  "regions": ["fra1"]
 } 

@@ -4,14 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "node build.js",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "prisma:migrate": "prisma migrate dev",
     "prisma:generate": "prisma generate",
     "prisma:studio": "prisma studio",
-    "deploy": "node build.js && vercel --prod",
-    "vercel-build": "node build.js"
+    "deploy": "vercel --prod",
+    "vercel-build": "node vercel-build.js"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
