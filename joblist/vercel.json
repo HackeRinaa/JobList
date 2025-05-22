@@ -1,12 +1,13 @@
 {
   "framework": "nextjs",
-  "buildCommand": "NEXT_DISABLE_ESLINT=1 SKIP_TYPE_CHECK=1 prisma generate && next build",
+  "buildCommand": "NEXT_DISABLE_ESLINT=1 SKIP_TYPE_CHECK=1 OUTPUT_EXPORT=true prisma generate && next build",
   "installCommand": "npm install",
   "build": {
     "env": {
       "NEXT_TELEMETRY_DISABLED": "1",
       "NEXT_DISABLE_ESLINT": "1",
       "SKIP_TYPE_CHECK": "1",
+      "OUTPUT_EXPORT": "true",
       "TWILIO_ACCOUNT_SID": "AC000000000000000000000000000000000",
       "TWILIO_AUTH_TOKEN": "0000000000000000000000000000000000",
       "TWILIO_PHONE_NUMBER": "+10000000000"

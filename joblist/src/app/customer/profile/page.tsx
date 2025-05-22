@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import FloatingNavbar from "@/components/Navbar";
 import CustomerSidebar from "@/components/customer/CustomerSidebar";
@@ -9,7 +9,7 @@ import CompletedListings from "@/components/customer/CompletedListings";
 import SavedProfessionals from "@/components/customer/SavedProfessionals";
 import CustomerChat from "@/components/customer/CustomerChat";
 
-export default function CustomerDashboard() {
+function CustomerDashboardContent() {
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState("profile");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -102,5 +102,13 @@ export default function CustomerDashboard() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CustomerDashboard() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <CustomerDashboardContent />
+    </Suspense>
   );
 } 

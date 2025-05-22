@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import CategorySelection from "@/components/customer/CategorySelection";
 import JobDetailsForm from "@/components/customer/JobDetailsForm";
@@ -31,7 +31,7 @@ interface FormData {
   };
 }
 
-const CreateListingPage: NextPage = () => {
+function CustomerForm() {
   const [step, setStep] = useState(1);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const searchParams = useSearchParams();
@@ -168,7 +168,7 @@ const CreateListingPage: NextPage = () => {
       <Footer />
     </div>
   );
-};
+}
 
 const StepWrapper = ({ children }: { children: React.ReactNode }) => (
   <motion.div
@@ -180,5 +180,14 @@ const StepWrapper = ({ children }: { children: React.ReactNode }) => (
     {children}
   </motion.div>
 );
+
+// Wrap the component with Suspense to fix the Next.js error
+const CreateListingPage: NextPage = () => {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <CustomerForm />
+    </Suspense>
+  );
+};
 
 export default CreateListingPage; 
