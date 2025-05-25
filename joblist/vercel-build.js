@@ -9,9 +9,9 @@ console.log('Starting Vercel build process...');
 console.log('Generating Prisma client...');
 execSync('npx prisma generate', { stdio: 'inherit' });
 
-// Set environment variables to skip problematic pages during build
-process.env.NEXT_PUBLIC_SKIP_PRERENDER_ROUTES = '/worker';
+// Set environment variables for the build
 process.env.NEXT_SKIP_CHECKS = '1';
+process.env.NEXT_TELEMETRY_DISABLED = '1';
 
 // Build Next.js application
 console.log('Building Next.js application...');

@@ -1,19 +1,24 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+// This middleware runs before every request
 export function middleware(request: NextRequest) {
-  // Simple middleware to add CORS headers and handle errors
-  const response = NextResponse.next();
+  const { pathname } = request.nextUrl;
   
-  // Add CORS headers
-  response.headers.set('Access-Control-Allow-Origin', '*');
-  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  // For /worker route specifically, add a dynamic flag to query params
+  if (pathname === '/worker') {
+    const url = request.nextUrl.clone();
+    url.searchParams.set('dynamic', 'true');
+    
+    // Use rewrite instead of redirect to maintain the URL but serve different content
+    return NextResponse.rewrite(url);
+  }
   
-  return response;
+  // For all other routes, continue normally
+  return NextResponse.next();
 }
 
-// Configure the middleware to run on API routes
+// Configure the middleware to run only for specific paths
 export const config = {
-  matcher: '/api/:path*',
+  matcher: ['/worker'],
 }; 

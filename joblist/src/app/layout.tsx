@@ -2,7 +2,12 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import "leaflet/dist/leaflet.css";
-import { ChatProvider } from '@/contexts/ChatContext'
+import dynamic from 'next/dynamic';
+
+// Use dynamic import for ChatProvider to avoid server-side rendering issues
+const ClientChatProvider = dynamic(() => import('@/components/ClientChatProvider'), {
+  ssr: false,
+});
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,9 +34,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ChatProvider>
+        <ClientChatProvider>
           {children}
-        </ChatProvider>
+        </ClientChatProvider>
       </body>
     </html>
   );

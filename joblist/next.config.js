@@ -87,31 +87,15 @@ const nextConfig = {
     ],
   },
 
-  // Define pages that should only be rendered on the client-side
-  // and should not be pre-rendered during build
+  // App Router configuration
   experimental: {
     optimizeCss: true,
+    serverComponentsExternalPackages: ['pdfjs-dist'],
   },
-
+  
   // Skip pre-rendering for pages that use browser-only APIs
   skipMiddlewareUrlNormalize: true,
   skipTrailingSlashRedirect: true,
-  
-  // Exclude specific routes from static generation to avoid window not defined errors
-  exportPathMap: async function (defaultPathMap, { dev }) {
-    // In development, we don't need to modify paths
-    if (dev) {
-      return defaultPathMap;
-    }
-    
-    // Filter out routes that cause window errors
-    const filteredMap = { ...defaultPathMap };
-    
-    // Remove the worker route from static generation
-    delete filteredMap['/worker'];
-    
-    return filteredMap;
-  },
 };
 
 module.exports = nextConfig; 
