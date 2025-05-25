@@ -1,5 +1,4 @@
 import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { MapContainerProps } from './type';
 import { FeatureCollection } from 'geojson';
