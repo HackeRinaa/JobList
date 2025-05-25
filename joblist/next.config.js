@@ -91,9 +91,6 @@ const nextConfig = {
     optimizeCss: true,
   },
   
-  // External packages configuration
-  serverExternalPackages: ['pdfjs-dist'],
-  
   // Skip pre-rendering for pages that use browser-only APIs
   skipMiddlewareUrlNormalize: true,
   skipTrailingSlashRedirect: true,

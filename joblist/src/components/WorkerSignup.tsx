@@ -97,7 +97,6 @@ interface WorkerFormData {
   expertise: string[];
   regions: string[];
   photo: File | null;
-  cv: File | null;
   selectedPlan: string | null;
 }
 
@@ -114,7 +113,6 @@ export default function WorkerSignup() {
     expertise: [],
     regions: [],
     photo: null,
-    cv: null,
     selectedPlan: null,
   });
   const fileInputRef = useRef<HTMLInputElement>(null);

@@ -37,6 +37,13 @@ interface StripeCheckoutProps {
   onError?: (error: string) => void;
 }
 
+// Define plan mapping
+const PLAN_MAPPING = {
+  'Βασικό': 'BASIC',
+  'Επαγγελματικό': 'PREMIUM',
+  'Premium': 'PROFESSIONAL'
+} as const;
+
 const StripeCheckout: React.FC<StripeCheckoutProps> = ({ 
   planName, 
   selectedPlan,
@@ -51,11 +58,9 @@ const StripeCheckout: React.FC<StripeCheckoutProps> = ({
       setIsLoading(true);
 
       // Map the plan name to the plan ID used in the API
-      let planId = '';
-      if (planName === 'Βασικό') planId = 'BASIC';
-      else if (planName === 'Επαγγελματικό') planId = 'PREMIUM';
-      else if (planName === 'Premium') planId = 'PROFESSIONAL';
-      else {
+      const planId = PLAN_MAPPING[planName as keyof typeof PLAN_MAPPING];
+
+      if (!planId) {
         throw new Error('Invalid plan selected');
       }
 
