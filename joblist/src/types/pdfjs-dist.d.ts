@@ -14,7 +14,7 @@ declare module 'pdfjs-dist' {
 
   export interface TextItem {
     str?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   }
 
   export interface PDFDocumentLoadingTask {
@@ -29,6 +29,6 @@ declare module 'pdfjs-dist' {
 }
 
 declare module 'pdfjs-dist/build/pdf.worker.entry' {
-  const entry: any;
+  const entry: unknown;
   export default entry;
 } 

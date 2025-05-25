@@ -7,13 +7,13 @@ declare module 'pdf-parse' {
       PDFFormatVersion: string;
       IsAcroFormPresent: boolean;
       IsXFAPresent: boolean;
-      [key: string]: any;
+      [key: string]: unknown;
     };
-    metadata: any;
+    metadata: Record<string, unknown>;
     version: string;
   }
 
-  function parse(dataBuffer: Buffer | Uint8Array, options?: any): Promise<PDFData>;
+  function parse(dataBuffer: Buffer | Uint8Array, options?: Record<string, unknown>): Promise<PDFData>;
 
   export = parse;
 } 
