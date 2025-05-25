@@ -53,7 +53,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gray-50">
       <FloatingNavbar />
       <div className="container mx-auto pt-20 sm:pt-24 px-4 pb-10">
-        <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6 sm:p-8">
+        <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6 sm:p-8 mt-12 mb-7">
           <h1 className="text-2xl font-bold text-gray-800 mb-6">Σύνδεση</h1>
           
           {error && (
@@ -104,13 +104,18 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <div className="mt-4 text-center">
+          <div className="mt-4 text-center flex justify-center flex-col gap-2">
             <p className="text-gray-600">
               Δεν έχετε λογαριασμό;{' '}
-              <a href="/register" className="text-[#FB7600] hover:underline">
-                Εγγραφείτε
-              </a>
             </p>
+            <div className="flex justify-center gap-2">
+              <a href="/worker" className="text-[#FB7600] hover:underline">
+                  Εγγραφείτε ως Εργάτης
+                </a>
+                <a href="/customer" className="text-[#FB7600] hover:underline">
+                  Εγγραφείτε ως Ιδιώτης
+                </a>
+              </div>
           </div>
         </div>
       </div>

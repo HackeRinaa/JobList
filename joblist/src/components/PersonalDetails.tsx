@@ -1,7 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Image from "next/image";
+import RegionSelector from "./RegionSelector";
+import { extractCVData, summarizeCVText } from "../services/cvExtractor";
 
 interface FormData {
   firstName: string;
@@ -12,6 +14,7 @@ interface FormData {
   expertise: string[];
   regions: string[];
   photo: File | null;
+  cv: File | null;
 }
 
 interface PersonalDetailsProps {
@@ -21,8 +24,8 @@ interface PersonalDetailsProps {
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   nextStep: () => void;
   expertiseFields: string[];
-  regions: { name: string; subRegions: string[] }[]; // Updated regions structure
   fileInputRef: React.RefObject<HTMLInputElement>;
+  setFormData?: React.Dispatch<React.SetStateAction<FormData>>;
 }
 
 const PersonalDetails: React.FC<PersonalDetailsProps> = ({
@@ -32,18 +35,14 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
   handleFileChange,
   nextStep,
   expertiseFields,
-  regions,
   fileInputRef,
+  setFormData,
 }) => {
-  const [expandedRegions, setExpandedRegions] = useState<string[]>([]);
+  const [isProcessingCV, setIsProcessingCV] = useState(false);
+  const [cvExtractedText, setCvExtractedText] = useState<string | null>(null);
+  const cvFileInputRef = useRef<HTMLInputElement>(null);
+  const bioTextareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const toggleRegion = (regionName: string) => {
-    setExpandedRegions((prev) =>
-      prev.includes(regionName)
-        ? prev.filter((name) => name !== regionName) // Collapse if already expanded
-        : [...prev, regionName] // Expand if not already expanded
-    );
-  };
   // Function to check if the button should be enabled
   const isButtonDisabled = () => {
     return !(
@@ -56,6 +55,80 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
       formData.regions.length > 0 &&
       formData.photo
     );
+  };
+
+  // Handle CV file upload
+  const handleCVUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    
+    const file = e.target.files[0];
+    
+    // Call the original handleFileChange
+    handleFileChange(e);
+    
+    try {
+      setIsProcessingCV(true);
+      
+      // Extract text from the CV
+      const data = await extractCVData(file);
+      setCvExtractedText(data.extractedText);
+      
+      // If we have a summary, update the bio field
+      if (data.summary && bioTextareaRef.current) {
+        const bioText = data.summary || ""; // Ensure it's not undefined
+        
+        // Update the textarea directly
+        bioTextareaRef.current.value = bioText;
+        
+        // Create a synthetic change event for the textarea
+        const event = new Event('input', { bubbles: true });
+        bioTextareaRef.current.dispatchEvent(event);
+        
+        // If setFormData is available, use it directly
+        if (setFormData) {
+          setFormData(prev => ({
+            ...prev,
+            bio: bioText
+          }));
+        }
+      }
+    } catch (error) {
+      console.error("Error processing CV:", error);
+    } finally {
+      setIsProcessingCV(false);
+    }
+  };
+
+  // Function to generate a bio from the CV text
+  const generateBioFromCV = async () => {
+    if (!cvExtractedText) return;
+    
+    try {
+      setIsProcessingCV(true);
+      const summary = await summarizeCVText(cvExtractedText);
+      const bioText = summary || ""; // Ensure it's not undefined
+      
+      // Update the textarea and form data
+      if (bioTextareaRef.current) {
+        bioTextareaRef.current.value = bioText;
+        
+        // Create a synthetic change event for the textarea
+        const event = new Event('input', { bubbles: true });
+        bioTextareaRef.current.dispatchEvent(event);
+        
+        // If setFormData is available, use it directly
+        if (setFormData) {
+          setFormData(prev => ({
+            ...prev,
+            bio: bioText
+          }));
+        }
+      }
+    } catch (error) {
+      console.error("Error generating bio:", error);
+    } finally {
+      setIsProcessingCV(false);
+    }
   };
 
   return (
@@ -128,51 +201,65 @@ const PersonalDetails: React.FC<PersonalDetailsProps> = ({
         </div>
       </div>
 
+      <RegionSelector formData={formData} handleMultiSelect={handleMultiSelect} />
+
+      {/* CV Upload Section */}
       <div className="mt-6">
-        <label className="block text-gray-800 mb-2">Περιοχές Εξυπηρέτησης</label>
-        <div className="flex flex-wrap gap-2">
-          {regions.map((region) => (
-            <div key={region.name} className="flex flex-col gap-2">
-              <button
-                type="button"
-                onClick={() => toggleRegion(region.name)}
-                className={`px-3 py-1 rounded-full text-sm ${
-                  formData.regions.includes(region.name) || region.subRegions.some((sub) => formData.regions.includes(sub))
-                    ? "bg-[#FB7600] text-white"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                }`}
-              >
-                {region.name}
-              </button>
-              {expandedRegions.includes(region.name) && (
-                <div className="pl-4 transition-all duration-300 ease-in-out">
-                  {region.subRegions.map((subRegion) => (
-                    <button
-                      key={subRegion}
-                      type="button"
-                      onClick={() => handleMultiSelect(subRegion, "regions")}
-                      className={`px-3 py-1 rounded-full text-sm mt-2 ${
-                        formData.regions.includes(subRegion)
-                          ? "bg-[#FB7600] text-white"
-                          : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                      }`}
-                    >
-                      {subRegion}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
+        <label className="block text-gray-800 mb-2">Βιογραφικό (PDF)</label>
+        <div className="flex items-center">
+          <button
+            onClick={() => cvFileInputRef.current?.click()}
+            className="px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors flex items-center text-[#FB7600]"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Ανέβασμα βιογραφικού
+          </button>
+          <input
+            type="file"
+            ref={cvFileInputRef}
+            onChange={handleCVUpload}
+            accept=".pdf"
+            className="hidden"
+          />
+          {formData.cv && (
+            <span className="ml-3 text-sm text-gray-600">
+              {formData.cv.name}
+            </span>
+          )}
         </div>
       </div>
 
       <div className="mt-6">
-        <label className="block text-gray-800 mb-2">Περιγραφή / Βιογραφικό</label>
+        <div className="flex justify-between items-center mb-2">
+          <label className="block text-gray-800">Περιγραφή / Βιογραφικό</label>
+          {cvExtractedText && (
+            <button
+              type="button"
+              onClick={generateBioFromCV}
+              disabled={isProcessingCV}
+              className="text-sm text-[#FB7600] hover:text-[#E56A00] flex items-center"
+            >
+              {isProcessingCV ? (
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-[#FB7600]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              ) : (
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                </svg>
+              )}
+              Δημιουργία με AI
+            </button>
+          )}
+        </div>
         <textarea
           name="bio"
           value={formData.bio}
           onChange={handleInputChange}
+          ref={bioTextareaRef}
           rows={4}
           className="text-gray-600 w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FB7600]"
           placeholder="Περιγράψτε την εμπειρία σας και τις υπηρεσίες που προσφέρετε..."
