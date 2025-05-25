@@ -1,9 +1,8 @@
 /** @type {import('next').NextConfig} */
 
-// Using direct configuration instead of the next-transpile-modules package
 const nextConfig = {
   reactStrictMode: true,
-  transpilePackages: ['pdfjs-dist', 'leaflet', 'react-leaflet'],
+  transpilePackages: ['leaflet', 'react-leaflet'],
   
   // Disable ESLint during builds to prevent deployment failures
   eslint: {
@@ -90,8 +89,10 @@ const nextConfig = {
   // App Router configuration
   experimental: {
     optimizeCss: true,
-    serverComponentsExternalPackages: ['pdfjs-dist'],
   },
+  
+  // External packages configuration
+  serverExternalPackages: ['pdfjs-dist'],
   
   // Skip pre-rendering for pages that use browser-only APIs
   skipMiddlewareUrlNormalize: true,
