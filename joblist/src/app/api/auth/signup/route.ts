@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { JobCategory } from '@/types/prisma';
+import { validateJobCategories } from '@/utils/categories';
 
 export async function POST(request: NextRequest) {
   // Parse JSON safely with error handling
@@ -24,8 +26,8 @@ export async function POST(request: NextRequest) {
     preferences
   } = body;
 
-  // Ensure preferences is an array even if it's null/undefined
-  const safePreferences = Array.isArray(preferences) ? preferences : [];
+  // Validate and convert preferences to JobCategory[]
+  const safePreferences = validateJobCategories(Array.isArray(preferences) ? preferences : []);
 
   // Validate input
   if (!email || !role) {
@@ -46,15 +48,12 @@ export async function POST(request: NextRequest) {
       try {
         console.log(`Updating existing user: ${email}`);
         
-        // Use only the fields known to be in the schema
         const updatedUser = await prisma.user.update({
           where: { email },
           data: {
             name,
             role,
-            // Store hashed password in a real app
-            // For this demo, we're just storing a simple string in the meta field
-            stripeCustomerId: password ? `password:${password}` : undefined, // Use stripeCustomerId to store password
+            stripeCustomerId: password ? `password:${password}` : undefined,
             profile: {
               upsert: {
                 create: {
@@ -92,19 +91,16 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Create new user in database with Prisma
+    // Create new user in database
     try {
       console.log(`Creating new user: ${email}`);
       
-      // Use only the fields known to be in the schema
       const newUser = await prisma.user.create({
         data: {
           email,
           name,
           role,
-          // Store hashed password in a real app
-          // For this demo, we're just storing a simple string in the meta field
-          stripeCustomerId: password ? `password:${password}` : undefined, // Use stripeCustomerId to store password
+          stripeCustomerId: password ? `password:${password}` : undefined,
           profile: {
             create: {
               bio,

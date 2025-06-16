@@ -1,10 +1,11 @@
 "use client";
 import React from "react";
-import { FiHome, FiTool, FiWifi, FiDroplet, FiSun, FiTruck, FiGrid, FiLayers } from "react-icons/fi";
+import { JobCategory } from "@/types/prisma";
+import { categoryTranslations, categoryIcons } from "@/utils/categories";
 
 interface CategorySelectionProps {
-  selectedCategory: string;
-  onSelect: (category: string) => void;
+  selectedCategory: JobCategory | "";
+  onSelect: (category: JobCategory) => void;
   onNext: () => void;
 }
 
@@ -13,46 +14,38 @@ export default function CategorySelection({
   onSelect,
   onNext,
 }: CategorySelectionProps) {
-  const categories = [
-    { id: "plumbing", name: "Υδραυλικά", icon: <FiDroplet size={24} /> },
-    { id: "electrical", name: "Ηλεκτρολογικά", icon: <FiWifi size={24} /> },
-    { id: "carpentry", name: "Ξυλουργικές εργασίες", icon: <FiTool size={24} /> },
-    { id: "painting", name: "Βαψίματα & Σοβάδες", icon: <FiSun size={24} /> },
-    { id: "moving", name: "Κατεδαφίσεις & Μεταφορές", icon: <FiTruck size={24} /> },
-    { id: "cleaning", name: "Καθαρισμός εργοταξίων", icon: <FiHome size={24} /> },
-    { id: "masonry", name: "Οικοδομικές εργασίες", icon: <FiLayers size={24} /> },
-    { id: "roofing", name: "Σκεπές & Μονώσεις", icon: <FiHome size={24} /> },
-    { id: "flooring", name: "Δάπεδα & Πλακάκια", icon: <FiGrid size={24} /> },
-    { id: "other", name: "Άλλες εργασίες", icon: <FiTool size={24} /> },
-  ];
-  
+  const categories = Object.values(JobCategory).map(category => ({
+    id: category,
+    name: categoryTranslations[category],
+    Icon: categoryIcons[category]
+  }));
 
   return (
     <div>
       <h2 className="mb-6 text-2xl font-semibold text-gray-800">
-        Τι είδους εργασία χρειάζεστε?
+        Τι είδους εργασία χρειάζεστε;
       </h2>
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-        {categories.map((category) => (
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+        {categories.map(({ id, name, Icon }) => (
           <button
-            key={category.id}
+            key={id}
             className={`flex flex-col items-center justify-center rounded-lg border-2 p-4 transition-all ${
-              selectedCategory === category.id
+              selectedCategory === id
                 ? "border-[#FB7600] bg-orange-50"
                 : "border-gray-200 hover:border-[#FB7600]"
             }`}
-            onClick={() => onSelect(category.id)}
+            onClick={() => onSelect(id)}
           >
             <div
               className={`mb-2 rounded-full p-3 ${
-                selectedCategory === category.id
+                selectedCategory === id
                   ? "bg-[#FB7600] text-white"
                   : "bg-gray-100 text-[#FB7600]"
               }`}
             >
-              {category.icon}
+              <Icon size={24} />
             </div>
-            <span className="text-sm font-medium text-gray-800">{category.name}</span>
+            <span className="text-sm font-medium text-gray-800 text-center">{name}</span>
           </button>
         ))}
       </div>
@@ -61,7 +54,7 @@ export default function CategorySelection({
         <button
           onClick={onNext}
           disabled={!selectedCategory}
-          className="rounded-lg bg-[#FB7600] px-6 py-2 font-medium text-white transition-colors hover:hover:bg-[#E56A00]  disabled:bg-gray-300"
+          className="rounded-lg bg-[#FB7600] px-6 py-2 font-medium text-white transition-colors hover:hover:bg-[#e66a00] disabled:bg-gray-300"
         >
           Συνέχεια
         </button>

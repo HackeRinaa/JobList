@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { JobCategory } from "@/types/prisma";
 import CategorySelection from "@/components/customer/CategorySelection";
 import JobDetailsForm from "@/components/customer/JobDetailsForm";
 import AddressForm from "@/components/customer/AddressForm";
@@ -9,10 +10,9 @@ import Stepper from "@/components/Stepper";
 import FloatingNavbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useRouter, useSearchParams } from "next/navigation";
-import { NextPage } from 'next';
 
 interface FormData {
-  category: string;
+  category: JobCategory | "";
   jobType: string;
   location: "home" | "business";
   specialTools: boolean;
@@ -32,19 +32,11 @@ interface FormData {
 }
 
 function CustomerForm() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [step, setStep] = useState(1);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const searchParams = useSearchParams();
-  const router = useRouter();
 
-  // Check if the user is already logged in from query parameter
-  useEffect(() => {
-    const loggedInParam = searchParams.get('isLoggedIn');
-    if (loggedInParam === 'true') {
-      setIsLoggedIn(true);
-    }
-  }, [searchParams]);
-  
   const [formData, setFormData] = useState<FormData>({
     category: "",
     jobType: "",
@@ -65,12 +57,27 @@ function CustomerForm() {
     },
   });
 
-  const updateFormData = (data: Partial<FormData>) => {
-    setFormData((prev) => ({ ...prev, ...data }));
+  useEffect(() => {
+    // Check if user is logged in
+    const token = localStorage.getItem('token');
+    setIsLoggedIn(!!token);
+
+    // If there's a category in the URL, set it
+    const categoryParam = searchParams.get('category');
+    if (categoryParam) {
+      setFormData(prev => ({
+        ...prev,
+        category: categoryParam as JobCategory
+      }));
+    }
+  }, [searchParams]);
+
+  const updateFormData = (updates: Partial<FormData>) => {
+    setFormData((prev) => ({ ...prev, ...updates }));
   };
 
-  const nextStep = () => setStep((prev) => Math.min(prev + 1, 4));
-  const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
+  const nextStep = () => setStep((prev) => prev + 1);
+  const prevStep = () => setStep((prev) => prev - 1);
 
   const handleSubmit = async () => {
     // If the user is logged in, redirect to the dashboard
@@ -107,6 +114,17 @@ function CustomerForm() {
     { label: "Λεπτομέρειες Διεύθυνσης" },
     { label: "Επιλογή Ημέρας και Ώρας" },
   ];
+
+  const StepWrapper = ({ children }: { children: React.ReactNode }) => (
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      transition={{ duration: 0.3 }}
+    >
+      {children}
+    </motion.div>
+  );
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -170,24 +188,10 @@ function CustomerForm() {
   );
 }
 
-const StepWrapper = ({ children }: { children: React.ReactNode }) => (
-  <motion.div
-    initial={{ opacity: 0, x: 20 }}
-    animate={{ opacity: 1, x: 0 }}
-    exit={{ opacity: 0, x: -20 }}
-    transition={{ duration: 0.3 }}
-  >
-    {children}
-  </motion.div>
-);
-
-// Wrap the component with Suspense to fix the Next.js error
-const CreateListingPage: NextPage = () => {
+export default function CustomerPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+    <Suspense fallback={<div>Loading...</div>}>
       <CustomerForm />
     </Suspense>
   );
-};
-
-export default CreateListingPage; 
+} 

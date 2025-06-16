@@ -1,106 +1,142 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { createStripeCustomer, createCheckoutSession, SUBSCRIPTION_PLANS } from '@/lib/stripe';
-import { createClient } from '@supabase/supabase-js';
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { z } from "zod";
+import { UserRole } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const workerSchema = z.object({
+  email: z.string().email(),
+  tempCode: z.string(),
+  firstName: z.string(),
+  lastName: z.string(),
+  bio: z.string().optional(),
+  expertise: z.array(z.string()).optional(),
+  regions: z.array(z.string()).optional(),
+  phone: z.string().optional(),
+  stripeCustomerId: z.string()
+});
 
-export async function POST(request: NextRequest) {
+export async function POST(req: Request) {
   try {
-    const body = await request.json();
+    const body = await req.json();
+    console.log("Received registration data:", body);
     
-    const { 
-      email,
-      password,
-      firstName,
-      lastName,
-      phone,
-      bio,
-      expertise,
-      regions,
-      selectedPlan,
-    } = body;
-
-    // Validate required fields
-    if (!email || !password || !firstName || !lastName) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
+    // Validate input
+    const result = workerSchema.safeParse(body);
+    if (!result.success) {
+      console.log("Validation errors:", result.error.issues);
+      return new NextResponse(
+        JSON.stringify({ success: false, error: "Invalid input", details: result.error.issues }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
-    // Sign up the user with Supabase
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          firstName,
-          lastName,
-          role: 'WORKER'
-        }
+    const data = result.data;
+    console.log("Validated data:", data);
+
+    // Check if user already exists
+    const existingUser = await prisma.user.findUnique({
+      where: { email: data.email },
+      include: {
+        profile: true
       }
     });
+    console.log("Existing user check:", existingUser);
 
-    if (authError) {
-      console.error('Supabase auth error:', authError);
-      return NextResponse.json(
-        { error: authError.message },
-        { status: 400 }
-      );
-    }
-
-    // Create Stripe customer
-    const fullName = `${firstName} ${lastName}`;
-    const stripeCustomer = await createStripeCustomer(email, fullName);
-
-    // Create user in database
-    const user = await prisma.user.create({
-      data: {
-        email,
-        name: fullName,
-        role: 'WORKER',
-        authId: authData.user?.id,
-        stripeCustomerId: stripeCustomer.id,
-        profile: {
-          create: {
-            bio: bio || '',
-            profession: expertise ? expertise.join(', ') : '',
-            location: regions ? regions.join(', ') : '',
-            phone: phone || '',
-            preferences: expertise || []
-          }
-        }
-      }
-    });
-
-    // If a plan was selected, create a checkout session
-    let checkoutSession = null;
-    if (selectedPlan) {
-      const planKey = selectedPlan.toUpperCase() as keyof typeof SUBSCRIPTION_PLANS;
-      const plan = SUBSCRIPTION_PLANS[planKey];
-      
-      if (plan) {
-        checkoutSession = await createCheckoutSession(
-          plan.price_id,
-          stripeCustomer.id
+    // If user exists but doesn't have a profile, delete the user and allow re-registration
+    if (existingUser) {
+      if (!existingUser.profile) {
+        await prisma.user.delete({
+          where: { id: existingUser.id }
+        });
+        console.log("Deleted existing user without profile");
+      } else {
+        return new NextResponse(
+          JSON.stringify({ success: false, error: "User with this email already exists" }),
+          { status: 409, headers: { 'Content-Type': 'application/json' } }
         );
       }
     }
 
-    return NextResponse.json({ 
-      success: true, 
-      userId: user.id, 
-      checkoutUrl: checkoutSession?.url || null 
+    // Start transaction
+    const { user } = await prisma.$transaction(async (tx) => {
+      console.log("Starting user creation with data:", {
+        email: data.email,
+        name: `${data.firstName} ${data.lastName}`,
+        role: UserRole.WORKER,
+        tempCode: data.tempCode,
+        stripeCustomerId: data.stripeCustomerId,
+      });
+
+      // Create user
+      const newUser = await tx.user.create({
+        data: {
+          email: data.email,
+          name: `${data.firstName} ${data.lastName}`,
+          role: UserRole.WORKER,
+          tempCode: data.tempCode,
+          stripeCustomerId: data.stripeCustomerId,
+          isVerified: false,
+          tokens: 0
+        },
+      });
+      console.log("Created new user:", newUser);
+
+      // Create profile
+      const newProfile = await tx.profile.create({
+        data: {
+          userId: newUser.id,
+          bio: data.bio || '',
+          phone: data.phone || '',
+          preferences: [...(data.regions || []), ...(data.expertise || [])],
+        },
+      });
+      console.log("Created profile:", newProfile);
+
+      return { user: newUser, profile: newProfile };
     });
+
+    const response = {
+      success: true,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name
+      }
+    };
+    console.log("Sending success response:", response);
+    
+    return new NextResponse(
+      JSON.stringify(response),
+      { status: 201, headers: { 'Content-Type': 'application/json' } }
+    );
+
   } catch (error) {
-    console.error('Worker signup error:', error);
-    return NextResponse.json(
-      { error: 'Failed to create worker account' },
-      { status: 500 }
+    console.error("Worker registration error:", error);
+    
+    // Handle Prisma errors
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      console.error("Prisma error code:", error.code);
+      console.error("Prisma error message:", error.message);
+      
+      if (error.code === 'P2002') {
+        return new NextResponse(
+          JSON.stringify({ success: false, error: "A user with this email already exists" }),
+          { status: 409, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      return new NextResponse(
+        JSON.stringify({ success: false, error: `Database error: ${error.message}` }),
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Handle all other errors
+    const errorMessage = error instanceof Error ? error.message : "An error occurred during registration";
+    return new NextResponse(
+      JSON.stringify({ success: false, error: errorMessage }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }
 } 

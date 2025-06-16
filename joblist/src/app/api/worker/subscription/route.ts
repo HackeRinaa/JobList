@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
         success: true, 
         checkoutUrl: checkoutSession.url
       });
-    } 
+    }
     // If not authenticated (during registration), create a temporary checkout session
     else {
       if (!email) {
@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ 
         success: true, 
         checkoutUrl: checkoutSession.url,
-        tempCustomerId: tempCustomer.id, // Return this so it can be saved with the user later
+        tempCustomerId: tempCustomer.id
       });
     }
   } catch (error) {

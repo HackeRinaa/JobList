@@ -17,7 +17,6 @@ function PaymentSuccessContent() {
   const sessionId = searchParams.get('session_id');
 
   useEffect(() => {
-    // If no session ID is present, redirect to home
     if (!sessionId) {
       setError("No session ID found. Payment might not have been completed.");
       setIsLoading(false);
@@ -30,53 +29,80 @@ function PaymentSuccessContent() {
         const storedData = localStorage.getItem('workerRegistration');
         const tempCustomerId = localStorage.getItem('stripeTemp_customerId');
         
-        if (storedData && tempCustomerId) {
-          const formData = JSON.parse(storedData);
-          
-          // Generate a temporary code for password creation - mix of numbers and letters
-          const generatedTempCode = Math.random().toString(36).substring(2, 10) + 
-                                  Math.random().toString(36).substring(2, 10);
-          
-          // Register the worker using the stored data
-          const response = await fetch('/api/auth/register', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              email: formData.email,
-              tempCode: generatedTempCode, // Store temporary code for password creation
-              firstName: formData.firstName,
-              lastName: formData.lastName,
-              bio: formData.bio,
-              expertise: formData.expertise,
-              regions: formData.regions,
-              phone: formData.phone,
-              stripeCustomerId: tempCustomerId,
-            }),
-          });
-          
-          const data = await response.json();
-          
-          if (!response.ok) {
-            throw new Error(data.error || 'Failed to complete registration');
-          }
-          
-          // Store email and temp code for password creation
-          setEmail(formData.email);
-          setTempCode(generatedTempCode);
-          
-          // Registration successful, clean up local storage
-          localStorage.removeItem('workerRegistration');
-          localStorage.removeItem('stripeTemp_customerId');
-          
-          setRegistrationComplete(true);
+        console.log("Stored registration data:", storedData);
+        console.log("Temp customer ID:", tempCustomerId);
+        
+        if (!storedData || !tempCustomerId) {
+          setError("Registration data not found. Please try registering again.");
           setIsLoading(false);
-        } else {
-          // If no stored data, the user might be already registered
-          // Just show success message
-          setIsLoading(false);
+          return;
         }
+
+        let formData;
+        try {
+          formData = JSON.parse(storedData);
+          console.log("Parsed form data:", formData);
+        } catch {
+          setError("Invalid registration data. Please try registering again.");
+          setIsLoading(false);
+          return;
+        }
+        
+        // Generate a temporary code for password creation
+        const generatedTempCode = Math.random().toString(36).substring(2, 10) + 
+                                Math.random().toString(36).substring(2, 10);
+        console.log("Generated temp code:", generatedTempCode);
+        
+        const requestData = {
+          email: formData.email,
+          tempCode: generatedTempCode,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          bio: formData.bio || '',
+          expertise: formData.expertise || [],
+          regions: formData.regions || [],
+          phone: formData.phone || '',
+          stripeCustomerId: tempCustomerId,
+        };
+        console.log("Sending registration request:", requestData);
+
+        // Register the worker using the stored data
+        const response = await fetch('/api/auth/signup/worker', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestData),
+        });
+
+        console.log("Registration response status:", response.status);
+        
+        let data;
+        try {
+          data = await response.json();
+          console.log("Registration response data:", data);
+        } catch {
+          throw new Error('Invalid response from server');
+        }
+
+        if (!response.ok) {
+          throw new Error(data?.error || 'Failed to complete registration');
+        }
+        
+        if (!data.success) {
+          throw new Error(data.error || 'Failed to complete registration');
+        }
+        
+        // Store email and temp code for password creation
+        setEmail(formData.email);
+        setTempCode(generatedTempCode);
+        
+        // Registration successful, clean up local storage
+        localStorage.removeItem('workerRegistration');
+        localStorage.removeItem('stripeTemp_customerId');
+        
+        setRegistrationComplete(true);
+        setIsLoading(false);
       } catch (err) {
         console.error('Error completing registration:', err);
         const errMessage = err instanceof Error ? err.message : 'An error occurred during registration';
@@ -91,7 +117,7 @@ function PaymentSuccessContent() {
     }, 2000);
 
     return () => clearTimeout(timer);
-  }, [sessionId, router]);
+  }, [sessionId]);
 
   const handleGoToProfile = () => {
     router.push('/worker/profile');
@@ -132,12 +158,20 @@ function PaymentSuccessContent() {
             </div>
             <h2 className="text-2xl font-bold text-gray-800 mb-4">Σφάλμα</h2>
             <p className="text-gray-600 mb-6">{error}</p>
-            <button
-              onClick={() => router.push('/')}
-              className="bg-[#FB7600] text-white px-6 py-2 rounded-lg hover:bg-[#E56A00] transition-all"
-            >
-              Επιστροφή στην αρχική
-            </button>
+            <div className="space-y-4">
+              <button
+                onClick={() => router.push('/worker')}
+                className="bg-[#FB7600] text-white px-6 py-2 rounded-lg hover:bg-[#E56A00] transition-all w-full"
+              >
+                Δοκιμάστε ξανά
+              </button>
+              <button
+                onClick={() => router.push('/')}
+                className="border border-[#FB7600] text-[#FB7600] px-6 py-2 rounded-lg hover:bg-[#FB7600] hover:text-white transition-all w-full"
+              >
+                Επιστροφή στην αρχική
+              </button>
+            </div>
           </div>
         </div>
         <Footer />

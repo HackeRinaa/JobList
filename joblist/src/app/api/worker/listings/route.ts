@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getUser } from '@/lib/supabase';
 import { JobStatus } from '@prisma/client';
+import { JobCategory } from '@/types/prisma';
 
 export async function GET(request: NextRequest) {
   try {
@@ -39,7 +40,7 @@ export async function GET(request: NextRequest) {
     const url = new URL(request.url);
     const page = parseInt(url.searchParams.get('page') || '1');
     const limit = parseInt(url.searchParams.get('limit') || '10');
-    const category = url.searchParams.get('category');
+    const category = url.searchParams.get('category') as JobCategory | null;
     const location = url.searchParams.get('location');
     const showPremium = url.searchParams.get('premium') === 'true';
     
@@ -61,53 +62,38 @@ export async function GET(request: NextRequest) {
 
     // Get job listings with pagination
     const skip = (page - 1) * limit;
-    const [totalCount, listings] = await Promise.all([
-      prisma.jobListing.count({ where: filter }),
+    const [listings, total] = await Promise.all([
       prisma.jobListing.findMany({
         where: filter,
-        select: {
-          id: true,
-          title: true,
-          category: true,
-          location: true,
-          budget: true,
-          description: true,
-          status: true,
-          premium: true,
-          tokenCost: true,
-          createdAt: true,
-          customer: {
-            select: {
-              id: true,
-              name: true,
-              profile: {
-                select: {
-                  rating: true
-                }
-              }
-            }
-          }
-        },
-        orderBy: { createdAt: 'desc' },
         skip,
-        take: limit
-      })
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          applications: {
+            where: { workerId: dbUser.id }
+          }
+        }
+      }),
+      prisma.jobListing.count({ where: filter })
     ]);
 
+    // Format listings to include application status
+    const formattedListings = listings.map(listing => ({
+      ...listing,
+      applied: listing.applications.length > 0
+    }));
+
     return NextResponse.json({
-      listings,
-      pagination: {
-        total: totalCount,
-        page,
-        limit,
-        pages: Math.ceil(totalCount / limit)
-      }
+      listings: formattedListings,
+      total,
+      currentPage: page,
+      totalPages: Math.ceil(total / limit)
     });
-    
+
   } catch (error) {
-    console.error('Error fetching listings:', error);
+    console.error('Error fetching job listings:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch job listings' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }

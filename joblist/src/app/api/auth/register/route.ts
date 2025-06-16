@@ -1,28 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { hash } from "bcrypt";
+import { z } from "zod";
+import { UserRole } from "@prisma/client";
+
+const userSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+  name: z.string().min(1),
+});
 
 export async function POST(req: NextRequest) {
   try {
-    const { 
-      email, 
-      password,
-      tempCode,
-      firstName, 
-      lastName, 
-      bio, 
-      expertise,
-      regions,
-      phone,
-      stripeCustomerId
-    } = await req.json();
-
-    // Basic validation - either password or tempCode should be provided
-    if (!email || (!password && !tempCode)) {
+    const body = await req.json();
+    
+    // Validate input
+    const result = userSchema.safeParse(body);
+    if (!result.success) {
       return NextResponse.json(
-        { error: 'Email and either password or tempCode are required' },
+        { error: "Invalid input", details: result.error.issues },
         { status: 400 }
       );
     }
+
+    const { email, password, name } = result.data;
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
@@ -31,56 +32,50 @@ export async function POST(req: NextRequest) {
 
     if (existingUser) {
       return NextResponse.json(
-        { error: 'User with this email already exists' },
-        { status: 400 }
+        { error: "User with this email already exists" },
+        { status: 409 }
       );
     }
 
-    // Skip Supabase registration for now due to connection issues
-    // We'll handle user creation in our database only
-    
-    try {
-      // Create user in database directly
-      const newUser = await prisma.user.create({
+    // Start transaction
+    const user = await prisma.$transaction(async (tx) => {
+      // Hash password
+      const hashedPassword = await hash(password, 10);
+
+      // Create user
+      const newUser = await tx.user.create({
         data: {
           email,
-          name: `${firstName} ${lastName}`,
-          role: 'WORKER',
-          stripeCustomerId,
+          name,
+          role: UserRole.CUSTOMER,
+          ...(hashedPassword ? { authId: hashedPassword } : {}),
         },
       });
 
-      // Store the tempCode with raw SQL if provided
-      if (tempCode) {
-        await prisma.$executeRaw`UPDATE "User" SET "tempCode" = ${tempCode} WHERE id = ${newUser.id}`;
-      }
+      return newUser;
+    });
 
-      // Create profile for the user
-      await prisma.profile.create({
-        data: {
-          userId: newUser.id,
-          bio: bio || '',
-          phone: phone || '',
-          preferences: [...(regions || []), ...(expertise || [])],
-        },
-      });
-
-      return NextResponse.json({
-        success: true,
-        user: {
-          id: newUser.id,
-          email: newUser.email,
-          name: newUser.name,
-        },
-      });
-    } catch (prismaError) {
-      console.error('Prisma Error:', prismaError);
-      throw prismaError;
-    }
-  } catch (error) {
-    console.error('Registration error:', error);
+    // Return success response without sensitive information
+    const userWithoutSensitiveInfo = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt
+    };
     return NextResponse.json(
-      { error: 'Failed to register user' },
+      { 
+        message: "User registered successfully",
+        user: userWithoutSensitiveInfo
+      },
+      { status: 201 }
+    );
+
+  } catch (error) {
+    console.error("Registration error:", error);
+    return NextResponse.json(
+      { error: "An error occurred during registration" },
       { status: 500 }
     );
   }

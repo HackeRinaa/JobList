@@ -1,5 +1,10 @@
 import { Dispatch, RefObject, SetStateAction, ChangeEvent } from 'react';
 
+interface ExpertiseField {
+  id: string;
+  name: string;
+}
+
 // Extend the FormData interface to include selectedPlan
 declare module '@/components/PersonalDetails' {
   export interface FormData {
@@ -8,7 +13,7 @@ declare module '@/components/PersonalDetails' {
     email: string;
     phone: string;
     bio: string;
-    expertise: string[];
+    expertise: string[]; // This stores expertise IDs
     regions: string[];
     photo: File | null;
     cv: File | null;
@@ -21,7 +26,7 @@ declare module '@/components/PersonalDetails' {
     handleMultiSelect: (item: string, category: "expertise" | "regions") => void;
     handleFileChange: (e: ChangeEvent<HTMLInputElement>) => void;
     nextStep: () => void;
-    expertiseFields: string[];
+    expertiseFields: ExpertiseField[];
     regions?: Array<{ name: string; subRegions: string[] }>;
     fileInputRef: RefObject<HTMLInputElement>;
     setFormData?: Dispatch<SetStateAction<FormData>>;

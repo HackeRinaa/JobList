@@ -1,7 +1,12 @@
 import Stripe from 'stripe';
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error('Missing STRIPE_SECRET_KEY environment variable');
+}
+
+export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2025-02-24.acacia',
+  typescript: true,
 });
 
 export const SUBSCRIPTION_PLANS = {
@@ -43,22 +48,44 @@ export const TOKEN_PACKAGES = {
   },
 };
 
-export async function createCheckoutSession(priceId: string, customerId: string) {
-  const session = await stripe.checkout.sessions.create({
-    customer: customerId,
-    mode: 'subscription',
-    payment_method_types: ['card'],
-    line_items: [
-      {
-        price: priceId,
-        quantity: 1,
-      },
-    ],
-    success_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/cancel`,
-  });
+export async function createStripeCustomer(email: string, name?: string) {
+  try {
+    const customer = await stripe.customers.create({
+      email,
+      name,
+    });
+    return customer;
+  } catch (error) {
+    console.error('Error creating Stripe customer:', error);
+    throw error;
+  }
+}
 
-  return session;
+export async function createCheckoutSession(priceId: string, customerId: string) {
+  try {
+    if (!process.env.NEXT_PUBLIC_APP_URL) {
+      throw new Error('Missing NEXT_PUBLIC_APP_URL environment variable');
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      customer: customerId,
+      mode: 'subscription',
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/cancel`,
+    });
+
+    return session;
+  } catch (error) {
+    console.error('Error creating checkout session:', error);
+    throw error;
+  }
 }
 
 export async function createTokenPurchaseSession(priceId: string, customerId: string) {
@@ -79,21 +106,22 @@ export async function createTokenPurchaseSession(priceId: string, customerId: st
   return session;
 }
 
-export async function createStripeCustomer(email: string, name?: string) {
-  const customer = await stripe.customers.create({
-    email,
-    name,
-  });
-
-  return customer;
-}
-
 export async function getSubscription(subscriptionId: string) {
-  const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-  return subscription;
+  try {
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+    return subscription;
+  } catch (error) {
+    console.error('Error retrieving subscription:', error);
+    throw error;
+  }
 }
 
 export async function cancelSubscription(subscriptionId: string) {
-  const subscription = await stripe.subscriptions.cancel(subscriptionId);
-  return subscription;
+  try {
+    const subscription = await stripe.subscriptions.cancel(subscriptionId);
+    return subscription;
+  } catch (error) {
+    console.error('Error cancelling subscription:', error);
+    throw error;
+  }
 } 

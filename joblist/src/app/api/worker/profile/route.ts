@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import jwt from 'jsonwebtoken';
+import { verifyToken } from '@/lib/auth';
+import { JobCategory } from '@/types/prisma';
+import { validateJobCategories } from '@/utils/categories';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
@@ -93,7 +96,7 @@ export async function PUT(req: NextRequest) {
     // Extract and verify the token
     const token = authHeader.split(' ')[1];
     const decoded = verifyToken(token);
-    if (!decoded || typeof decoded === 'string') {
+    if (!decoded) {
       return NextResponse.json(
         { message: 'Invalid token' },
         { status: 401 }
@@ -102,6 +105,9 @@ export async function PUT(req: NextRequest) {
 
     // Get request body
     const { name, bio, phone, preferences } = await req.json();
+
+    // Validate and convert preferences to JobCategory[]
+    const safePreferences = validateJobCategories(Array.isArray(preferences) ? preferences : []);
 
     // Update user data
     const updatedUser = await prisma.user.update({
@@ -113,12 +119,12 @@ export async function PUT(req: NextRequest) {
             create: {
               bio,
               phone,
-              preferences,
+              preferences: safePreferences
             },
             update: {
               bio,
               phone,
-              preferences,
+              preferences: safePreferences
             },
           },
         },

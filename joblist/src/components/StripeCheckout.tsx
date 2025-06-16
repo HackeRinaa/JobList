@@ -8,30 +8,16 @@ import { loadStripe } from '@stripe/stripe-js';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
-interface Plan {
-  name: string;
-  price: string;
-  period: string;
-  tokens: number;
-  features: string[];
-  recommended: boolean;
-}
-
 interface FormData {
+  email: string;
   firstName: string;
   lastName: string;
-  email: string;
-  phone: string;
-  bio: string;
-  expertise: string[];
-  regions: string[];
-  photo: File | null;
-  selectedPlan: string | null;
+  [key: string]: string;
 }
 
 interface StripeCheckoutProps {
-  planName: string | null;
-  selectedPlan: Plan | undefined;
+  planName: string;
+  selectedPlan: string;
   formData: FormData;
   onSuccess?: () => void;
   onError?: (error: string) => void;
@@ -52,10 +38,12 @@ const StripeCheckout: React.FC<StripeCheckoutProps> = ({
   onError
 }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleCheckout = async () => {
     try {
       setIsLoading(true);
+      setError(null);
 
       // Map the plan name to the plan ID used in the API
       const planId = PLAN_MAPPING[planName as keyof typeof PLAN_MAPPING];
@@ -86,12 +74,22 @@ const StripeCheckout: React.FC<StripeCheckoutProps> = ({
 
       // Store the tempCustomerId in localStorage if available
       if (data.tempCustomerId) {
+        console.log("Storing temp customer ID:", data.tempCustomerId);
         localStorage.setItem('stripeTemp_customerId', data.tempCustomerId);
+        
+        const registrationData = {
+          email: formData.email,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          bio: formData.bio || '',
+          expertise: formData.expertise || [],
+          regions: formData.regions || [],
+          phone: formData.phone || '',
+        };
+        console.log("Storing registration data:", registrationData);
+        
         // Store form data temporarily to use after successful payment
-        localStorage.setItem('workerRegistration', JSON.stringify({
-          ...formData,
-          stripeCustomerId: data.tempCustomerId
-        }));
+        localStorage.setItem('workerRegistration', JSON.stringify(registrationData));
       }
 
       // Redirect to Stripe Checkout
@@ -101,9 +99,10 @@ const StripeCheckout: React.FC<StripeCheckoutProps> = ({
       } else {
         throw new Error('No checkout URL returned');
       }
-    } catch (error: unknown) {
-      console.error('Error during checkout:', error);
-      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      console.error('Checkout error:', errorMessage);
+      setError(errorMessage);
       if (onError) onError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -115,19 +114,21 @@ const StripeCheckout: React.FC<StripeCheckoutProps> = ({
   }
 
   return (
-    <div className="w-full">
+    <div className="mt-4">
+      {error && (
+        <div className="text-red-500 mb-4">
+          {error}
+        </div>
+      )}
       <button
         onClick={handleCheckout}
         disabled={isLoading}
-        className={`w-full bg-[#FB7600] text-white px-6 py-3 rounded-lg hover:bg-[#E56A00] transition-all ${
-          isLoading ? 'opacity-70 cursor-not-allowed' : ''
+        className={`w-full bg-[#FB7600] text-white py-2 px-4 rounded-lg hover:bg-[#e66a00] transition-colors ${
+          isLoading ? 'opacity-50 cursor-not-allowed' : ''
         }`}
       >
-        {isLoading ? 'Επεξεργασία...' : 'Πληρωμή με Stripe'}
+        {isLoading ? 'Παρακαλώ περιμένετε...' : 'Συνέχεια στην πληρωμή'}
       </button>
-      <p className="text-sm text-gray-500 mt-2 text-center">
-        Ασφαλής πληρωμή μέσω Stripe
-      </p>
     </div>
   );
 };

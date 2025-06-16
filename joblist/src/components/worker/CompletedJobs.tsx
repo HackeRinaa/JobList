@@ -1,178 +1,187 @@
 "use client";
 import React, { useState } from "react";
 import { FiStar, FiCalendar, FiMapPin, FiDollarSign } from "react-icons/fi";
+import { JobCategory } from "@/types/prisma";
+import { categoryTranslations } from "@/utils/categories";
 
 interface CompletedJob {
   id: string;
   title: string;
-  clientName: string;
+  category: JobCategory;
   location: string;
-  completionDate: string;
-  payment: string;
-  rating: number;
-  feedback?: string;
+  completedDate: string;
+  earnings: string;
+  customerName: string;
+  customerRating: number;
+  customerReview?: string;
 }
 
 export default function CompletedJobs() {
   const [filter, setFilter] = useState("all");
-  const completedJobs: CompletedJob[] = [
+
+  const [completedJobs] = useState<CompletedJob[]>([
     {
       id: "1",
-      title: "Εγκατάσταση ηλεκτρικού πίνακα",
-      clientName: "Μαρία Παπαδοπούλου",
+      title: "Επισκευή πλυντηρίου",
+      category: JobCategory.APPLIANCE_REPAIR,
       location: "Αθήνα, Κολωνάκι",
-      completionDate: "2024-05-10",
-      payment: "180€",
-      rating: 5,
-      feedback: "Εξαιρετική δουλειά, γρήγορος και επαγγελματίας!",
+      completedDate: "2024-05-10",
+      earnings: "80€",
+      customerName: "Μαρία Παπαδοπούλου",
+      customerRating: 5,
+      customerReview: "Εξαιρετική δουλειά, συνεπής και επαγγελματίας!"
     },
     {
       id: "2",
-      title: "Επισκευή διαρροής",
-      clientName: "Γιώργος Νικολάου",
+      title: "Εγκατάσταση φωτιστικών",
+      category: JobCategory.ELECTRICIAN,
       location: "Αθήνα, Γλυφάδα",
-      completionDate: "2024-05-03",
-      payment: "70€",
-      rating: 4,
-      feedback: "Καλή δουλειά, λίγο καθυστερημένος.",
+      completedDate: "2024-05-08",
+      earnings: "150€",
+      customerName: "Γιώργος Αντωνίου",
+      customerRating: 4,
+      customerReview: "Καλή δουλειά, μικρή καθυστέρηση στην ώρα προσέλευσης"
     },
     {
       id: "3",
-      title: "Εγκατάσταση φωτιστικών",
-      clientName: "Ελένη Δημητρίου",
+      title: "Καθαρισμός σπιτιού",
+      category: JobCategory.CLEANING_SERVICE,
       location: "Αθήνα, Χαλάνδρι",
-      completionDate: "2024-04-28",
-      payment: "120€",
-      rating: 5,
-      feedback: "Άψογη εργασία και πολύ καλή επικοινωνία!",
-    },
-    {
-      id: "4",
-      title: "Επισκευή κλιματιστικού",
-      clientName: "Κώστας Αντωνίου",
-      location: "Αθήνα, Κυψέλη",
-      completionDate: "2024-04-15",
-      payment: "90€",
-      rating: 3,
-      feedback: "Έκανε τη δουλειά, αλλά άφησε αρκετή ακαταστασία.",
-    },
-  ];
+      completedDate: "2024-05-05",
+      earnings: "100€",
+      customerName: "Ελένη Δημητρίου",
+      customerRating: 5,
+      customerReview: "Άψογη δουλειά, θα την ξαναπροτιμήσω!"
+    }
+  ]);
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("el-GR");
+  const filteredJobs = completedJobs.filter(job => {
+    if (filter === 'rated') return job.customerRating > 0;
+    if (filter === 'unrated') return job.customerRating === 0;
+    return true;
+  });
+
+  const calculateAverageRating = () => {
+    const ratedJobs = completedJobs.filter(job => job.customerRating > 0);
+    if (ratedJobs.length === 0) return 0;
+    const sum = ratedJobs.reduce((acc, job) => acc + job.customerRating, 0);
+    return (sum / ratedJobs.length).toFixed(1);
   };
 
-  const renderStars = (rating: number) => {
-    return Array(5)
-      .fill(0)
-      .map((_, i) => (
-        <FiStar
-          key={i}
-          className={`${
-            i < rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"
-          }`}
-        />
-      ));
-  };
-
-  const filteredJobs = filter === "all" 
-    ? completedJobs 
-    : completedJobs.filter(job => Math.floor(job.rating) === parseInt(filter));
-
-  const totalEarnings = completedJobs.reduce(
-    (total, job) => total + parseFloat(job.payment.replace("€", "")),
-    0
-  );
-
-  const averageRating =
-    completedJobs.reduce((total, job) => total + job.rating, 0) / completedJobs.length;
+  const totalEarnings = completedJobs
+    .reduce((sum, job) => sum + parseFloat(job.earnings.replace('€', '')), 0)
+    .toFixed(2);
 
   return (
     <div>
       <h2 className="text-2xl font-bold text-gray-800 mb-6">Ολοκληρωμένες Εργασίες</h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
-          <p className="text-gray-500 text-sm">Συνολικές Εργασίες</p>
-          <p className="text-2xl font-bold text-gray-700">{completedJobs.length}</p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="text-gray-500 mb-2">Συνολικές Εργασίες</div>
+          <div className="text-2xl font-bold text-[#FB7600]">{completedJobs.length}</div>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
-          <p className="text-gray-500 text-sm">Συνολικά Έσοδα</p>
-          <p className="text-2xl font-bold text-gray-700">{totalEarnings}€</p>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
-          <p className="text-gray-500 text-sm">Μέση Αξιολόγηση</p>
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="text-gray-500 mb-2">Μέση Αξιολόγηση</div>
           <div className="flex items-center">
-            <p className="text-2xl font-bold text-gray-700 mr-2">{averageRating.toFixed(1)}</p>
+            <span className="text-2xl font-bold mr-2 text-[#FB7600]">{calculateAverageRating()}</span>
             <div className="flex">
-              {renderStars(Math.round(averageRating))}
+              {[1, 2, 3, 4, 5].map((star) => (
+                <FiStar
+                  key={star}
+                  className={`w-5 h-5 ${
+                    star <= Number(calculateAverageRating())
+                      ? 'text-yellow-400 fill-current'
+                      : 'text-gray-300'
+                  }`}
+                />
+              ))}
             </div>
           </div>
+        </div>
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="text-gray-500 mb-2">Συνολικά Έσοδα</div>
+          <div className="text-2xl font-bold text-[#FB7600]">{totalEarnings}€</div>
         </div>
       </div>
 
       <div className="mb-6">
-        <label htmlFor="filter" className="block text-gray-700 mb-2">
-          Φιλτράρισμα με βάση την αξιολόγηση
-        </label>
-        <select
-          id="filter"
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="w-full md:w-64 p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600] text-gray-500"
-        >
-          <option value="all">Όλες οι αξιολογήσεις</option>
-          <option value="5">⭐⭐⭐⭐⭐ (5 αστέρια)</option>
-          <option value="4">⭐⭐⭐⭐ (4 αστέρια)</option>
-          <option value="3">⭐⭐⭐ (3 αστέρια)</option>
-          <option value="2">⭐⭐ (2 αστέρια)</option>
-          <option value="1">⭐ (1 αστέρι)</option>
-        </select>
+        <div className="flex space-x-2">
+          <button
+            onClick={() => setFilter('all')}
+            className={`px-4 py-2 rounded-lg ${
+              filter === 'all'
+                ? 'bg-[#FB7600] text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            Όλες
+          </button>
+          <button
+            onClick={() => setFilter('rated')}
+            className={`px-4 py-2 rounded-lg ${
+              filter === 'rated'
+                ? 'bg-[#FB7600] text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            Με Αξιολόγηση
+          </button>
+          <button
+            onClick={() => setFilter('unrated')}
+            className={`px-4 py-2 rounded-lg ${
+              filter === 'unrated'
+                ? 'bg-[#FB7600] text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            Χωρίς Αξιολόγηση
+          </button>
+        </div>
       </div>
 
       <div className="space-y-4">
-        {filteredJobs.length > 0 ? (
-          filteredJobs.map((job) => (
-            <div
-              key={job.id}
-              className="bg-white rounded-lg border border-gray-200 p-4"
-            >
-              <div className="flex justify-between flex-wrap">
-                <h3 className="text-lg font-semibold text-gray-800">
-                  {job.title}
-                </h3>
-                <div className="flex items-center">
-                  {renderStars(job.rating)}
+        {filteredJobs.map((job) => (
+          <div key={job.id} className="bg-white rounded-lg shadow-md p-4">
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800">{job.title}</h3>
+                <div className="mt-1 text-sm text-gray-600">
+                  {categoryTranslations[job.category]}
                 </div>
-              </div>
-              
-              <div className="mt-2 text-gray-600">
-                <p>Πελάτης: {job.clientName}</p>
-                <div className="flex flex-wrap mt-2 gap-x-4 gap-y-2 text-sm">
+                <div className="mt-2 flex items-center gap-4 text-sm text-gray-500">
                   <span className="flex items-center">
                     <FiMapPin className="mr-1" /> {job.location}
                   </span>
                   <span className="flex items-center">
-                    <FiCalendar className="mr-1" /> {formatDate(job.completionDate)}
+                    <FiCalendar className="mr-1" /> {job.completedDate}
                   </span>
                   <span className="flex items-center">
-                    <FiDollarSign className="mr-1" /> {job.payment}
+                    <FiDollarSign className="mr-1" /> {job.earnings}
                   </span>
                 </div>
               </div>
-              
-              {job.feedback && (
-                <div className="mt-3 pt-3 border-t border-gray-100">
-                  <h4 className="text-sm font-medium text-gray-700">Σχόλια Πελάτη:</h4>
-                  <p className="text-gray-600 italic">&quot;{job.feedback}&quot;</p>
+              <div className="flex items-center">
+                <div className="flex items-center bg-green-50 px-3 py-1 rounded-full">
+                  <FiStar className="text-yellow-400 mr-1" />
+                  <span className="text-green-700 font-medium">{job.customerRating}/5</span>
                 </div>
-              )}
+              </div>
             </div>
-          ))
-        ) : (
+            {job.customerReview && (
+              <div className="mt-3 text-sm text-gray-600 italic">
+                &quot;{job.customerReview}&quot;
+                <div className="mt-1 text-sm text-gray-500 not-italic">
+                  - {job.customerName}
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+
+        {filteredJobs.length === 0 && (
           <div className="text-center py-8">
-            <p className="text-gray-500">Δεν βρέθηκαν ολοκληρωμένες εργασίες με τα επιλεγμένα κριτήρια.</p>
+            <p className="text-gray-500">Δεν βρέθηκαν ολοκληρωμένες εργασίες με τα επιλεγμένα φίλτρα.</p>
           </div>
         )}
       </div>

@@ -25,16 +25,16 @@ export default function HowItWorks() {
 
           {/* Image and divider */}
           <div className="w-full flex flex-col items-center justify-center mb-16">
-            <div className="relative w-full max-w-md mb-6">
+            <div className="relative w-full max-w-md mb-6 ml-[90px]">
               <Image
-                src="/how-it-works.png"
+                src="/JobListing.png"
                 alt="How it works"
                 width={500}
                 height={400}
                 className="w-full h-auto"
               />
             </div>
-            <div className="h-1 bg-[#FB7600] opacity-70 w-full max-w-xl rounded-full"></div>
+            <div className="mt-[-24px] h-1 bg-[#FB7600] opacity-70 w-full max-w-xl rounded-full"></div>
           </div>
 
           {/* For professionals section */}

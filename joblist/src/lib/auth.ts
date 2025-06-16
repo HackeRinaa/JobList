@@ -1,5 +1,14 @@
 import { supabase } from '@/lib/supabase';
 import { User } from '@supabase/supabase-js';
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+
+interface JwtPayload {
+  email: string;
+  role: string;
+  exp: number;
+}
 
 /**
  * Check if a user is authenticated
@@ -123,4 +132,21 @@ export function getRedirectPath(user: User | null) {
   } else {
     return '/login';
   }
+}
+
+export function verifyToken(token: string): JwtPayload | null {
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
+    return decoded;
+  } catch (error) {
+    console.error('Error verifying token:', error);
+    return null;
+  }
+}
+
+export function generateToken(email: string, role: string): string {
+  return jwt.sign(
+    { email, role, exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24) },
+    JWT_SECRET
+  );
 } 

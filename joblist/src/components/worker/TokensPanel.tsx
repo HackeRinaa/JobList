@@ -1,177 +1,102 @@
 "use client";
-import React, { useState } from "react";
-import { FiPlus } from "react-icons/fi";
-
-interface TokenTransaction {
-  id: string;
-  date: string;
-  type: "purchase" | "use";
-  amount: number;
-  description: string;
-}
+import React, { useContext } from 'react';
+import { UserContext } from '@/contexts/WorkerContext';
+import { FiCreditCard, FiPlus } from 'react-icons/fi';
 
 export default function TokensPanel() {
-  const [tokens, setTokens] = useState(15);
-  const [transactions, setTransactions] = useState<TokenTransaction[]>([
-    {
-      id: "1",
-      date: "2024-05-10",
-      type: "purchase",
-      amount: 20,
-      description: "Αγορά tokens - Πακέτο Standard",
-    },
-    {
-      id: "2",
-      date: "2024-05-12",
-      type: "use",
-      amount: -1,
-      description: "Αίτηση για εργασία: Επισκευή ηλεκτρικής εγκατάστασης",
-    },
-    {
-      id: "3",
-      date: "2024-05-15",
-      type: "use",
-      amount: -1,
-      description: "Αίτηση για εργασία: Εγκατάσταση φωτιστικών",
-    },
-    {
-      id: "4",
-      date: "2024-05-18",
-      type: "use",
-      amount: -3,
-      description: "Αίτηση για εργασία: Ανακαίνιση ηλεκτρολογικών",
-    },
-  ]);
+  const userData = useContext(UserContext);
 
-  const [showBuyModal, setShowBuyModal] = useState(false);
-  const [buyAmount, setBuyAmount] = useState(10);
+  const tokenPackages = [
+    {
+      tokens: 50,
+      price: "29.99",
+      savings: "0%",
+      recommended: false
+    },
+    {
+      tokens: 120,
+      price: "59.99",
+      savings: "15%",
+      recommended: true
+    },
+    {
+      tokens: 250,
+      price: "99.99",
+      savings: "25%",
+      recommended: false
+    }
+  ];
 
-  const handleBuyTokens = () => {
-    // In a real app, this would integrate with a payment system
-    const newTransaction: TokenTransaction = {
-      id: Date.now().toString(),
-      date: new Date().toISOString().split("T")[0],
-      type: "purchase",
-      amount: buyAmount,
-      description: `Αγορά ${buyAmount} tokens`,
-    };
-
-    setTokens(tokens + buyAmount);
-    setTransactions([newTransaction, ...transactions]);
-    setShowBuyModal(false);
+  const handlePurchaseTokens = (amount: number, price: string) => {
+    // In a real app, this would open a Stripe checkout session
+    console.log(`Purchasing ${amount} tokens for €${price}`);
   };
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">Τα Credits μου</h2>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-bold text-gray-800">Credits</h2>
+        <div className="flex items-center bg-gray-100 px-4 py-2 rounded-lg">
+          <FiCreditCard className="text-[#FB7600] mr-2" />
+          <span className="font-semibold text-gray-800">{userData?.user?.tokens || 0} credits</span>
+        </div>
+      </div>
 
-      <div className="bg-gradient-to-r from-orange-500 to-[#FB7600] rounded-lg p-6 text-white mb-8">
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-          <div>
-            <p className="text-sm opacity-80">Διαθέσιμα Credits</p>
-            <p className="text-3xl font-bold">{tokens}</p>
-            <p className="text-sm mt-2">
-              Χρησιμοποίησε credits για να κάνεις αίτηση σε εργασίες
-            </p>
-          </div>
-          <button
-            onClick={() => setShowBuyModal(true)}
-            className="w-full sm:w-auto bg-white text-[#FB7600] px-4 py-2 rounded-lg flex items-center justify-center hover:bg-orange-50"
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {tokenPackages.map((pkg, index) => (
+          <div 
+            key={index}
+            className={`relative p-6 rounded-lg border-2 ${
+              pkg.recommended 
+                ? 'border-[#FB7600] bg-orange-50' 
+                : 'border-gray-200 bg-white'
+            }`}
           >
-            <FiPlus className="mr-1" /> Αγορά Credits
-          </button>
-        </div>
-      </div>
-
-      <h3 className="text-xl font-semibold text-gray-700 mb-4">Ιστορικό Συναλλαγών</h3>
-      <div className="bg-white border border-gray-200 rounded-lg overflow-hidden overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Ημερομηνία
-              </th>
-              <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Περιγραφή
-              </th>
-              <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Credits
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {transactions.map((transaction) => (
-              <tr key={transaction.id}>
-                <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {new Date(transaction.date).toLocaleDateString("el-GR")}
-                </td>
-                <td className="px-4 sm:px-6 py-4 text-sm text-gray-500 max-w-xs break-words">
-                  {transaction.description}
-                </td>
-                <td
-                  className={`px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium ${
-                    transaction.type === "purchase"
-                      ? "text-green-600"
-                      : "text-red-600"
-                  }`}
-                >
-                  {transaction.type === "purchase" ? "+" : ""}
-                  {transaction.amount}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Buy Tokens Modal */}
-      {showBuyModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">Αγορά Credits</h3>
-            <div className="mb-4">
-              <label className="block text-gray-700 mb-2">Επίλεξε ποσότητα</label>
-              <div className="flex flex-wrap gap-2">
-                {[10, 20, 50, 100].map((amount) => (
-                  <button
-                    key={amount}
-                    onClick={() => setBuyAmount(amount)}
-                    className={`px-4 py-2 rounded-lg ${
-                      buyAmount === amount
-                        ? "bg-[#FB7600] text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                    }`}
-                  >
-                    {amount}
-                  </button>
-                ))}
+            {pkg.recommended && (
+              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                <span className="bg-[#FB7600] text-white px-3 py-1 rounded-full text-sm">
+                  Προτεινόμενο
+                </span>
               </div>
-            </div>
-            <div className="mb-6">
-              <p className="text-gray-700">
-                Κόστος: <span className="font-bold">{buyAmount * 0.5}€</span>
-              </p>
-              <p className="text-sm text-gray-500 mt-1">
-                (0.50€ ανά credit)
-              </p>
-            </div>
-            <div className="flex justify-end space-x-3">
+            )}
+            
+            <div className="text-center">
+              <h3 className="text-xl font-bold mb-2 text-gray-600">{pkg.tokens} Credits</h3>
+              <p className="text-3xl font-bold text-[#FB7600] mb-2">€{pkg.price}</p>
+              {pkg.savings !== "0%" && (
+                <p className="text-green-600 text-sm mb-4">
+                  Εξοικονόμηση {pkg.savings}
+                </p>
+              )}
               <button
-                onClick={() => setShowBuyModal(false)}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                onClick={() => handlePurchaseTokens(pkg.tokens, pkg.price)}
+                className="w-full bg-[#FB7600] text-white py-2 rounded-lg hover:bg-[#e66a00] transition-colors flex items-center justify-center"
               >
-                Ακύρωση
-              </button>
-              <button
-                onClick={handleBuyTokens}
-                className="px-4 py-2 bg-[#FB7600] text-white rounded-lg hover:bg-orange-700"
-              >
-                Αγορά
+                <FiPlus className="mr-2" />
+                Αγορά Credits
               </button>
             </div>
           </div>
-        </div>
-      )}
+        ))}
+      </div>
+
+      <div className="mt-8 bg-gray-50 p-6 rounded-lg">
+        <h3 className="text-lg font-semibold mb-4 text-gray-600">Πώς λειτουργούν τα credits;</h3>
+        <ul className="space-y-3 text-gray-600">
+          <li className="flex items-start">
+            <span className="mr-2">•</span>
+            Τα credits χρησιμοποιούνται για να ξεκλειδώσετε τα στοιχεία επικοινωνίας των αγγελιών.
+          </li>
+          <li className="flex items-start">
+            <span className="mr-2">•</span>
+            Κάθε αγγελία έχει διαφορετικό κόστος credits ανάλογα με την κατηγορία και την προτεραιότητά της.
+          </li>
+          <li className="flex items-start">
+            <span className="mr-2">•</span>
+            Τα credits δεν έχουν ημερομηνία λήξης και μπορείτε να τα χρησιμοποιήσετε όποτε θέλετε.
+          </li>
+        </ul>
+      </div>
     </div>
   );
 } 

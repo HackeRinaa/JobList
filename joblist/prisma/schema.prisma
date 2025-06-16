@@ -11,94 +11,95 @@ model User {
   id               String        @id @default(cuid())
   email            String        @unique
   name             String?
+  stripeCustomerId String?
+  authId           String?
   role             UserRole      @default(CUSTOMER)
-  authId           String?       @unique
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
-  stripeCustomerId String?
   tokens           Int           @default(0)
-  tempCode         String?       // Temporary code for password reset/creation
-  isVerified       Boolean       @default(false) // Whether the user has verified their account
-  applications     Application[]
-  jobListings      JobListing[]  @relation("CreatedListings")
+  applications     Application[] @relation("WorkerApplications")
+  assignedJobs     JobListing[]  @relation("AssignedWorker")
+  createdListings  JobListing[]  @relation("CustomerListings")
   messages         Message[]
   profile          Profile?
-  workerProfile    WorkerProfile?
   reviewsReceived  Review[]      @relation("ReviewsReceived")
   reviewsGiven     Review[]      @relation("ReviewsGiven")
   subscription     Subscription?
+  tokenPurchases   TokenPurchase[]
 }
 
 model Profile {
-  id            String   @id @default(cuid())
-  userId        String   @unique
+  id            String       @id @default(cuid())
+  userId        String       @unique
   bio           String?
   profession    String?
   location      String?
   rating        Float?
-  completedJobs Int      @default(0)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  completedJobs Int         @default(0)
   phone         String?
   city          String?
   postalCode    String?
-  preferences   String[] @default([])
-  user          User     @relation(fields: [userId], references: [id])
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  preferences   JobCategory[] @default([])
+  imageUrl      String?
+  user          User         @relation(fields: [userId], references: [id])
 }
 
-model Subscription {
-  id                   String             @id @default(cuid())
-  userId               String             @unique
-  stripeSubscriptionId String
-  status               SubscriptionStatus
-  plan                 SubscriptionPlan
-  startDate            DateTime           @default(now())
-  endDate              DateTime?
-  createdAt            DateTime           @default(now())
-  updatedAt            DateTime           @updatedAt
-  user                 User               @relation(fields: [userId], references: [id])
+enum JobCategory {
+  ELECTRICIAN
+  PLUMBER
+  PAINTER
+  CARPENTER
+  HVAC_TECHNICIAN
+  APPLIANCE_REPAIR
+  GENERAL_CONTRACTOR
+  ARCHITECT
+  INTERIOR_DESIGNER
+  LANDSCAPER
+  MASON
+  ROOFER
+  FLOORING_SPECIALIST
+  SECURITY_SYSTEM_INSTALLER
+  HOME_INSPECTOR
+  CLEANING_SERVICE
+  PEST_CONTROL
+  POOL_MAINTENANCE
+  SOLAR_INSTALLER
+  SMART_HOME_TECHNICIAN
 }
 
 model JobListing {
   id               String        @id @default(cuid())
   title            String
-  category         String
+  category         JobCategory
   location         String
   description      String
   budget           String
-  status           JobStatus     @default(PENDING)
-  premium          Boolean       @default(false)
-  tokenCost        Int           @default(1)
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
   customerId       String
   assignedWorkerId String?
+  status           JobStatus     @default(PENDING)
+  premium          Boolean       @default(false)
+  tokenCost        Int          @default(1)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
   applications     Application[]
-  customer         User          @relation("CreatedListings", fields: [customerId], references: [id])
+  customer         User          @relation("CustomerListings", fields: [customerId], references: [id])
+  assignedWorker   User?         @relation("AssignedWorker", fields: [assignedWorkerId], references: [id])
 }
 
 model Application {
-  id             String            @id @default(cuid())
+  id             String             @id @default(cuid())
   jobId          String
   workerId       String
   message        String?
   estimatedPrice String?
-  status         ApplicationStatus @default(PENDING)
+  status         ApplicationStatus  @default(PENDING)
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
   job            JobListing        @relation(fields: [jobId], references: [id])
-  worker         User              @relation(fields: [workerId], references: [id])
+  worker         User              @relation("WorkerApplications", fields: [workerId], references: [id])
   messages       Message[]
-}
-
-model TokenPurchase {
-  id              String        @id @default(cuid())
-  userId          String
-  amount          Int
-  cost            Float
-  stripePaymentId String
-  status          PaymentStatus
-  createdAt       DateTime      @default(now())
 }
 
 model Message {
@@ -135,23 +136,34 @@ model AdminStats {
   canceledJobs         Int      @default(0)
   totalApplications    Int      @default(0)
   acceptedApplications Int      @default(0)
-  newUsersToday        Int      @default(0)
-  newJobsToday         Int      @default(0)
-  revenue              Float    @default(0)
-  lastUpdated          DateTime @default(now())
+  newUsersToday       Int      @default(0)
+  newJobsToday        Int      @default(0)
+  revenue             Float    @default(0)
+  lastUpdated         DateTime @default(now())
 }
 
-// New model for worker profiles with simplified fields
-model WorkerProfile {
-  id          String    @id @default(cuid())
-  userId      String    @unique
-  bio         String?
-  phone       String?
-  preferences String[]  @default([])
-  imageUrl    String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  user        User      @relation(fields: [userId], references: [id])
+model Subscription {
+  id                  String            @id @default(cuid())
+  userId              String            @unique
+  stripeSubscriptionId String
+  status              SubscriptionStatus
+  plan                SubscriptionPlan
+  endDate             DateTime?
+  startDate           DateTime          @default(now())
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  user                User              @relation(fields: [userId], references: [id])
+}
+
+model TokenPurchase {
+  id              String           @id @default(cuid())
+  userId          String
+  amount          Int
+  cost            Float
+  stripePaymentId String
+  status          PurchaseStatus
+  createdAt       DateTime         @default(now())
+  user            User             @relation(fields: [userId], references: [id])
 }
 
 enum UserRole {
@@ -178,16 +190,17 @@ enum SubscriptionStatus {
   ACTIVE
   CANCELLED
   EXPIRED
+  PENDING
 }
 
 enum SubscriptionPlan {
   BASIC
+  PRO
   PREMIUM
-  PROFESSIONAL
 }
 
-enum PaymentStatus {
-  PENDING
+enum PurchaseStatus {
   COMPLETED
+  PENDING
   FAILED
 }

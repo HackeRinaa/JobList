@@ -14,19 +14,47 @@ const PersonalDetails = dynamic(() => import("@/components/PersonalDetails"), {
   loading: () => <div className="p-8 text-center">Loading personal details form...</div> 
 });
 
-const expertiseFields = [
-  "Υδραυλικός",
-  "Ηλεκτρολόγος",
-  "Ελαιοχρωματιστής",
-  "Ξυλουργός",
-  "Κηπουρός",
-  "Καθαριστής",
-  "Μετακομίσεις",
-  "Κλιματισμός",
-  "Πλακάς",
-  "Αλουμινάς",
-  "Σιδεράς",
-  "Τζαμάς",
+interface ExpertiseField {
+  id: string;
+  name: string;
+}
+
+const expertiseFields: ExpertiseField[] = [
+  // Βασικές Κατασκευαστικές Εργασίες
+  { id: "electrician", name: "Ηλεκτρολόγοι" },
+  { id: "plumber", name: "Υδραυλικοί" },
+  { id: "painter", name: "Ελαιοχρωματιστές" },
+  { id: "carpenter", name: "Μαραγκοί" },
+  { id: "woodworker", name: "Ξυλουργοί" },
+  { id: "gardener", name: "Κηπουροί" },
+  { id: "pool", name: "Πισινάδες" },
+  { id: "builder", name: "Χτίστες" },
+  { id: "formworker", name: "Καλουπατζήδες" },
+  
+  // Επαγγελματίες Σχεδιασμού
+  { id: "architect", name: "Αρχιτέκτονες" },
+  { id: "engineer", name: "Μηχανικοί" },
+  { id: "designer", name: "Σχεδιαστές εσωτερικών εξωτερικών χώρων" },
+  
+  // Ειδικές Εργασίες
+  { id: "flooring", name: "Πατωματζήδες" },
+  { id: "marble", name: "Μαρμαράδες" },
+  { id: "tiler", name: "Πλακάδες" },
+  { id: "polisher", name: "Λουστραδόροι" },
+  { id: "ac", name: "Ψυκτικοί" },
+  { id: "metalworker", name: "Σιδεράδες" },
+  { id: "aluminum", name: "Αλουμινάδες" },
+  { id: "glazier", name: "Τζαμάδες" },
+  { id: "awning", name: "Τεντάδες" },
+  { id: "plasterer", name: "Γυψαδόροι" },
+  { id: "mover", name: "Μεταφορείς" },
+  { id: "drywall", name: "Γυψοσανιδάδες" },
+  { id: "industrial_floor", name: "Βιομηχανικά πατώματα" },
+  { id: "demolition", name: "Κατεδαφίσεις" },
+  { id: "stonework", name: "Πετράδες" },
+  { id: "security", name: "Συστήματα ασφαλείας" },
+  { id: "pest_control", name: "Απεντομώσεις" },
+  { id: "elevator", name: "Τεχνικοί ανελκυστήρων" }
 ];
 
 const regions = [
@@ -94,7 +122,7 @@ interface WorkerFormData {
   email: string;
   phone: string;
   bio: string;
-  expertise: string[];
+  expertise: string[]; // This will store the IDs of selected expertise
   regions: string[];
   photo: File | null;
   selectedPlan: string | null;

@@ -1,11 +1,13 @@
 "use client";
 import React, { useState } from "react";
 import { FiMapPin, FiCalendar, FiTag, FiStar } from "react-icons/fi";
+import { JobCategory } from "@/types/prisma";
+import { categoryTranslations } from "@/utils/categories";
 
 interface CompletedListing {
   id: string;
   title: string;
-  category: string;
+  category: JobCategory;
   location: string;
   description: string;
   completionDate: string;
@@ -21,40 +23,42 @@ export default function CompletedListings() {
     {
       id: "1",
       title: "Επισκευή πλυντηρίου",
-      category: "Επισκευές Συσκευών",
+      category: JobCategory.APPLIANCE_REPAIR,
       location: "Αθήνα, Κολωνάκι",
-      description: "Το πλυντήριο δεν λειτουργεί σωστά, χρειάζεται επισκευή.",
-      completionDate: "2024-05-01",
-      budget: "70€",
+      description: "Επισκευή πλυντηρίου Samsung",
+      completionDate: "2024-05-10",
+      budget: "80€",
       workerName: "Γιώργος Παπαδόπουλος",
-      workerId: "w1",
+      workerId: "worker1",
       rating: 5,
-      feedback: "Εξαιρετική δουλειά, γρήγορος και επαγγελματίας!",
+      feedback: "Άριστη δουλειά, επαγγελματική συμπεριφορά"
     },
     {
       id: "2",
       title: "Εγκατάσταση φωτιστικών",
-      category: "Ηλεκτρολογικά",
+      category: JobCategory.ELECTRICIAN,
       location: "Αθήνα, Γλυφάδα",
-      description: "Εγκατάσταση 3 φωτιστικών οροφής στο σαλόνι και την κουζίνα.",
-      completionDate: "2024-04-20",
-      budget: "120€",
+      description: "Εγκατάσταση 5 φωτιστικών οροφής",
+      completionDate: "2024-05-08",
+      budget: "150€",
       workerName: "Νίκος Αντωνίου",
-      workerId: "w2",
+      workerId: "worker2",
       rating: 4,
-      feedback: "Καλή δουλειά, αλλά άργησε λίγο να έρθει.",
+      feedback: "Καλή δουλειά, μικρή καθυστέρηση"
     },
     {
       id: "3",
-      title: "Καθαρισμός σπιτιού",
-      category: "Καθαρισμοί",
+      title: "Γενικός καθαρισμός σπιτιού",
+      category: JobCategory.CLEANING_SERVICE,
       location: "Αθήνα, Χαλάνδρι",
-      description: "Γενικός καθαρισμός διαμερίσματος 85τ.μ.",
-      completionDate: "2024-04-10",
-      budget: "90€",
+      description: "Καθαρισμός διαμερίσματος 120τ.μ.",
+      completionDate: "2024-05-05",
+      budget: "100€",
       workerName: "Μαρία Κωνσταντίνου",
-      workerId: "w3",
-    },
+      workerId: "worker3",
+      rating: 5,
+      feedback: "Εξαιρετική δουλειά, θα την ξαναπροτιμήσω"
+    }
   ]);
 
   const [expandedListing, setExpandedListing] = useState<string | null>(null);

@@ -3,26 +3,21 @@ import React, { useState, useEffect } from "react";
 import { FiMapPin, FiCalendar, FiTag, FiMessageSquare, FiStar, FiX, FiPhone, FiMail, FiBookmark, FiPlus } from "react-icons/fi";
 import { useChatContext } from "@/contexts/ChatContext";
 import { useRouter } from "next/navigation";
+import { JobCategory } from "@/types/prisma";
 
 interface Application {
   id: string;
-  workerId: string;
   workerName: string;
+  workerId: string;
   message?: string;
-  date: string;
   estimatedPrice?: string;
-  rating?: number;
-  completedJobs?: number;
-  profession?: string;
-  bio?: string;
-  phone?: string;
-  email?: string;
+  status: "pending" | "accepted" | "rejected";
 }
 
 interface Listing {
   id: string;
   title: string;
-  category: string;
+  category: JobCategory;
   location: string;
   description: string;
   postedDate: string;
@@ -139,103 +134,62 @@ const WorkerProfileModal = ({
 };
 
 export default function ActiveListings() {
-  const { startConversation } = useChatContext();
+  const { startConversation, setSelectedWorker } = useChatContext();
   const router = useRouter();
 
-  const [activeListings, setActiveListings] = useState<Listing[]>([
+  const [activeListings] = useState<Listing[]>([
     {
       id: "1",
-      title: "Επισκευή διαρροής νερού",
-      category: "Υδραυλικά",
+      title: "Επισκευή υδραυλικών",
+      category: JobCategory.PLUMBER,
       location: "Αθήνα, Κολωνάκι",
-      description: "Έχω διαρροή νερού στο μπάνιο, χρειάζομαι άμεσα υδραυλικό.",
-      postedDate: "2024-05-18",
-      budget: "50-80€",
+      description: "Διαρροή στο μπάνιο, χρειάζεται άμεση επισκευή",
+      postedDate: "2024-05-15",
+      budget: "Αναμένεται προσφορά",
       status: "pending",
       applications: [
         {
           id: "a1",
-          workerId: "w1",
           workerName: "Γιώργος Παπαδόπουλος",
-          message: "Είμαι διαθέσιμος αύριο το πρωί. Έχω μεγάλη εμπειρία σε επισκευές διαρροών.",
-          date: "2024-05-19",
-          estimatedPrice: "65€",
-          rating: 4.8,
-          completedJobs: 127,
-          profession: "Υδραυλικός",
-          bio: "Επαγγελματίας υδραυλικός με 15 χρόνια εμπειρίας. Εξειδίκευση σε επισκευές και εγκαταστάσεις σε κατοικίες και επαγγελματικούς χώρους.",
-          phone: "6912345678",
-          email: "giorgos@example.com"
-        },
-        {
-          id: "a2",
-          workerId: "w2",
-          workerName: "Νίκος Αντωνίου",
-          message: "Μπορώ να έρθω σήμερα το απόγευμα για να δω το πρόβλημα.",
-          date: "2024-05-19",
-          estimatedPrice: "70€",
-          rating: 4.6,
-          completedJobs: 98,
-          profession: "Υδραυλικός",
-          bio: "Πιστοποιημένος υδραυλικός με εμπειρία σε οικιακές και βιομηχανικές εγκαταστάσεις. Άμεση εξυπηρέτηση και ποιοτική δουλειά.",
-          phone: "6923456789",
-          email: "nikos@example.com"
-        },
-      ],
+          workerId: "w1",
+          message: "Μπορώ να αναλάβω την επισκευή άμεσα",
+          estimatedPrice: "80-100€",
+          status: "pending"
+        }
+      ]
     },
     {
       id: "2",
       title: "Εγκατάσταση κλιματιστικού",
-      category: "Ψύξη/Θέρμανση",
+      category: JobCategory.HVAC_TECHNICIAN,
       location: "Αθήνα, Γλυφάδα",
-      description: "Χρειάζομαι τεχνικό για εγκατάσταση κλιματιστικού 12άρι inverter.",
-      postedDate: "2024-05-15",
-      budget: "80-120€",
-      status: "assigned",
-      applications: [
-        {
-          id: "a3",
-          workerId: "w3",
-          workerName: "Κώστας Δημητρίου",
-          message: "Έχω εγκαταστήσει πάνω από 100 κλιματιστικά. Διαθέσιμος όποτε σας βολεύει.",
-          date: "2024-05-16",
-          estimatedPrice: "100€",
-          rating: 4.9,
-          completedJobs: 156,
-          profession: "Τεχνικός Ψύξης/Θέρμανσης",
-          bio: "Εξειδικευμένος τεχνικός με πιστοποιήσεις σε όλες τις μεγάλες μάρκες κλιματιστικών. Παρέχω εγγύηση καλής λειτουργίας για όλες τις εργασίες.",
-          phone: "6934567890",
-          email: "kostas@example.com"
-        },
-      ],
-      assignedWorkerId: "w3",
+      description: "Εγκατάσταση κλιματιστικού 12άρι inverter",
+      postedDate: "2024-05-14",
+      budget: "Αναμένεται προσφορά",
+      status: "pending",
+      applications: []
     },
     {
       id: "3",
-      title: "Βάψιμο σαλονιού",
-      category: "Βαφές",
+      title: "Βάψιμο σπιτιού",
+      category: JobCategory.PAINTER,
       location: "Αθήνα, Χαλάνδρι",
-      description: "Αναζητώ επαγγελματία για βάψιμο σαλονιού 25τ.μ.",
-      postedDate: "2024-05-10",
-      budget: "150-200€",
+      description: "Βάψιμο σαλονιού και δύο υπνοδωματίων",
+      postedDate: "2024-05-13",
+      budget: "Αναμένεται προσφορά",
       status: "in_progress",
       applications: [
         {
-          id: "a4",
-          workerId: "w4",
-          workerName: "Μιχάλης Αλεξίου",
-          message: "Επαγγελματίας ελαιοχρωματιστής με 15 χρόνια εμπειρία.",
-          date: "2024-05-11",
-          profession: "Ελαιοχρωματιστής",
-          completedJobs: 89,
-          rating: 4.7,
-          bio: "Επαγγελματίας ελαιοχρωματιστής με πολυετή εμπειρία. Εξειδίκευση σε οικιακές και επαγγελματικές βαφές.",
-          phone: "6945678901",
-          email: "mixalis@example.com"
-        },
+          id: "a2",
+          workerName: "Νίκος Αντωνίου",
+          workerId: "w2",
+          message: "Έχω εμπειρία σε παρόμοιες εργασίες",
+          estimatedPrice: "300-350€",
+          status: "accepted"
+        }
       ],
-      assignedWorkerId: "w4",
-    },
+      assignedWorkerId: "w2"
+    }
   ]);
 
   // Load listings from localStorage on component mount

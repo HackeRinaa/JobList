@@ -3,13 +3,18 @@
 import React, { useRef } from "react";
 import RegionSelector from "./RegionSelector";
 
+interface ExpertiseField {
+  id: string;
+  name: string;
+}
+
 interface FormData {
   firstName: string;
   lastName: string;
   email: string;
   phone: string;
   bio: string;
-  expertise: string[];
+  expertise: string[]; // This stores expertise IDs
   regions: string[];
   photo: File | null;
 }
@@ -20,7 +25,7 @@ interface PersonalDetailsProps {
   handleMultiSelect: (item: string, category: "expertise" | "regions") => void;
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   nextStep: () => void;
-  expertiseFields: string[];
+  expertiseFields: ExpertiseField[];
   fileInputRef: React.RefObject<HTMLInputElement>;
   setFormData?: React.Dispatch<React.SetStateAction<FormData>>;
 }
@@ -52,7 +57,7 @@ const PersonalDetails = ({
 
   return (
     <div className="max-w-2xl mx-auto p-6">
-      <h2 className="text-2xl font-semibold mb-6">Προσωπικά Στοιχεία</h2>
+      <h2 className="text-2xl font-semibold mb-6 text-gray-600">Προσωπικά Στοιχεία</h2>
       
       <div className="grid grid-cols-2 gap-4">
         <div>
@@ -132,16 +137,16 @@ const PersonalDetails = ({
         <div className="flex flex-wrap gap-2">
           {expertiseFields.map((field) => (
             <button
-              key={field}
+              key={field.id}
               type="button"
-              onClick={() => handleMultiSelect(field, "expertise")}
+              onClick={() => handleMultiSelect(field.id, "expertise")}
               className={`px-3 py-1 rounded-full text-sm ${
-                formData.expertise.includes(field)
+                formData.expertise.includes(field.id)
                   ? "bg-[#FB7600] text-white"
                   : "bg-gray-200 text-gray-700 hover:bg-gray-300"
               }`}
             >
-              {field}
+              {field.name}
             </button>
           ))}
         </div>
