@@ -1,66 +1,10 @@
 "use client";
 import React, { useState } from "react";
 import { FiMapPin, FiCalendar, FiTag, FiStar } from "react-icons/fi";
-import { JobCategory } from "@/types/prisma";
-import { categoryTranslations } from "@/utils/categories";
-
-interface CompletedListing {
-  id: string;
-  title: string;
-  category: JobCategory;
-  location: string;
-  description: string;
-  completionDate: string;
-  budget: string;
-  workerName: string;
-  workerId: string;
-  rating?: number;
-  feedback?: string;
-}
+import { useCustomerContext } from "@/contexts/CustomerContext";
 
 export default function CompletedListings() {
-  const [completedListings, setCompletedListings] = useState<CompletedListing[]>([
-    {
-      id: "1",
-      title: "Επισκευή πλυντηρίου",
-      category: JobCategory.APPLIANCE_REPAIR,
-      location: "Αθήνα, Κολωνάκι",
-      description: "Επισκευή πλυντηρίου Samsung",
-      completionDate: "2024-05-10",
-      budget: "80€",
-      workerName: "Γιώργος Παπαδόπουλος",
-      workerId: "worker1",
-      rating: 5,
-      feedback: "Άριστη δουλειά, επαγγελματική συμπεριφορά"
-    },
-    {
-      id: "2",
-      title: "Εγκατάσταση φωτιστικών",
-      category: JobCategory.ELECTRICIAN,
-      location: "Αθήνα, Γλυφάδα",
-      description: "Εγκατάσταση 5 φωτιστικών οροφής",
-      completionDate: "2024-05-08",
-      budget: "150€",
-      workerName: "Νίκος Αντωνίου",
-      workerId: "worker2",
-      rating: 4,
-      feedback: "Καλή δουλειά, μικρή καθυστέρηση"
-    },
-    {
-      id: "3",
-      title: "Γενικός καθαρισμός σπιτιού",
-      category: JobCategory.CLEANING_SERVICE,
-      location: "Αθήνα, Χαλάνδρι",
-      description: "Καθαρισμός διαμερίσματος 120τ.μ.",
-      completionDate: "2024-05-05",
-      budget: "100€",
-      workerName: "Μαρία Κωνσταντίνου",
-      workerId: "worker3",
-      rating: 5,
-      feedback: "Εξαιρετική δουλειά, θα την ξαναπροτιμήσω"
-    }
-  ]);
-
+  const { completedListings, addCompletedListing } = useCustomerContext();
   const [expandedListing, setExpandedListing] = useState<string | null>(null);
   const [ratingForm, setRatingForm] = useState<{
     listingId: string;
@@ -86,17 +30,17 @@ export default function CompletedListings() {
 
   const handleSubmitRating = () => {
     if (ratingForm) {
-      setCompletedListings(
-        completedListings.map((listing) =>
-          listing.id === ratingForm.listingId
-            ? {
-                ...listing,
-                rating: ratingForm.rating,
-                feedback: ratingForm.feedback,
-              }
-            : listing
-        )
-      );
+      // In a real app, this would update the database
+      // For now, we'll just update the local state
+      const updatedListing = completedListings.find(l => l.id === ratingForm.listingId);
+      if (updatedListing) {
+        const newListing = {
+          ...updatedListing,
+          rating: ratingForm.rating,
+          feedback: ratingForm.feedback,
+        };
+        addCompletedListing(newListing);
+      }
       setRatingForm(null);
     }
   };

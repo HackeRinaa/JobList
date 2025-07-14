@@ -196,7 +196,7 @@ enum SubscriptionStatus {
 enum SubscriptionPlan {
   BASIC
   PRO
-  PREMIUM
+  ELITE
 }
 
 enum PurchaseStatus {

@@ -8,6 +8,8 @@ import ActiveListings from "@/components/customer/ActiveListings";
 import CompletedListings from "@/components/customer/CompletedListings";
 import SavedProfessionals from "@/components/customer/SavedProfessionals";
 import CustomerChat from "@/components/customer/CustomerChat";
+import { ChatProvider } from "@/contexts/ChatContext";
+import { CustomerProvider } from "@/contexts/CustomerContext";
 
 function CustomerDashboardContent() {
   const searchParams = useSearchParams();
@@ -63,45 +65,49 @@ function CustomerDashboardContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <FloatingNavbar />
-      <div className="container mx-auto pt-20 sm:pt-24 px-3 sm:px-4 pb-10">
-        {/* Mobile Menu Toggle Button */}
-        <div className="md:hidden flex justify-between items-center mb-4 bg-white rounded-lg shadow-sm p-3">
-          <h1 className="text-lg font-semibold text-gray-800">
-            {activeTab === "profile" && "Προφίλ"}
-            {activeTab === "active" && "Ενεργές Αγγελίες"}
-            {activeTab === "completed" && "Ολοκληρωμένες Αγγελίες"}
-            {activeTab === "saved" && "Αποθηκευμένοι Επαγγελματίες"}
-            {activeTab === "chat" && "Συνομιλίες"}
-          </h1>
-          <button
-            onClick={toggleMobileMenu}
-            className="bg-[#FB7600] text-white px-3 py-1 rounded-md"
-          >
-            {mobileMenuOpen ? "Κλείσιμο" : "Μενού"}
-          </button>
-        </div>
+    <CustomerProvider>
+      <ChatProvider>
+        <div className="min-h-screen bg-gray-50">
+          <FloatingNavbar />
+          <div className="container mx-auto pt-20 sm:pt-24 px-3 sm:px-4 pb-10">
+            {/* Mobile Menu Toggle Button */}
+            <div className="md:hidden flex justify-between items-center mb-4 bg-white rounded-lg shadow-sm p-3">
+              <h1 className="text-lg font-semibold text-gray-800">
+                {activeTab === "profile" && "Προφίλ"}
+                {activeTab === "active" && "Ενεργές Αγγελίες"}
+                {activeTab === "completed" && "Ολοκληρωμένες Αγγελίες"}
+                {activeTab === "saved" && "Αποθηκευμένοι Επαγγελματίες"}
+                {activeTab === "chat" && "Συνομιλίες"}
+              </h1>
+              <button
+                onClick={toggleMobileMenu}
+                className="bg-[#FB7600] text-white px-3 py-1 rounded-md"
+              >
+                {mobileMenuOpen ? "Κλείσιμο" : "Μενού"}
+              </button>
+            </div>
 
-        <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
-          {/* Sidebar - Desktop always visible, mobile conditional */}
-          <div className={`${mobileMenuOpen ? 'block' : 'hidden'} md:block`}>
-            <CustomerSidebar 
-              activeTab={activeTab} 
-              setActiveTab={(tab) => {
-                setActiveTab(tab);
-                setMobileMenuOpen(false);
-              }} 
-            />
-          </div>
-          
-          {/* Main Content */}
-          <div className="flex-1 bg-white rounded-lg shadow-md p-3 sm:p-6 overflow-x-hidden">
-            {renderContent()}
+            <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
+              {/* Sidebar - Desktop always visible, mobile conditional */}
+              <div className={`${mobileMenuOpen ? 'block' : 'hidden'} md:block`}>
+                <CustomerSidebar 
+                  activeTab={activeTab} 
+                  setActiveTab={(tab) => {
+                    setActiveTab(tab);
+                    setMobileMenuOpen(false);
+                  }} 
+                />
+              </div>
+              
+              {/* Main Content */}
+              <div className="flex-1 bg-white rounded-lg shadow-md p-3 sm:p-6 overflow-x-hidden">
+                {renderContent()}
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+      </ChatProvider>
+    </CustomerProvider>
   );
 }
 

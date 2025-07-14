@@ -76,11 +76,21 @@ const nextConfig = {
   
   // Ensure images from leaflet can be loaded
   images: {
-    domains: ["localhost", "vercel.app", "unpkg.com"],
+    domains: ["localhost", "vercel.app", "unpkg.com", "supabase.co", "via.placeholder.com"],
     remotePatterns: [
       {
         protocol: 'https',
         hostname: 'unpkg.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.supabase.co',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'via.placeholder.com',
         pathname: '/**',
       },
     ],

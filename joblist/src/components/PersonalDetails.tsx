@@ -17,6 +17,7 @@ interface FormData {
   expertise: string[]; // This stores expertise IDs
   regions: string[];
   photo: File | null;
+  selectedPlan?: string | null;
 }
 
 interface PersonalDetailsProps {

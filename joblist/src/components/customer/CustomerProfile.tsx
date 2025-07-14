@@ -2,6 +2,7 @@
 import React, { useState, useRef } from "react";
 import { FiEdit2, FiCamera } from "react-icons/fi";
 import Image from "next/image";
+import { useCustomerContext } from "@/contexts/CustomerContext";
 
 interface CustomerData {
   name: string;
@@ -14,19 +15,35 @@ interface CustomerData {
 }
 
 export default function CustomerProfile() {
+  const { customerData, updateCustomerData, isLoading } = useCustomerContext();
   const [isEditing, setIsEditing] = useState(false);
-  const [customerData, setCustomerData] = useState<CustomerData>({
-    name: "Ελένη Παπαδοπούλου",
-    email: "eleni@example.com",
-    phone: "6912345678",
-    address: "Λεωφόρος Αλεξάνδρας 15",
-    city: "Αθήνα",
-    postalCode: "11521",
-    imageUrl: undefined,
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Convert customerData to local form format
+  const [formData, setFormData] = useState<CustomerData>({
+    name: customerData?.name || "",
+    email: customerData?.email || "",
+    phone: customerData?.phone || "",
+    address: customerData?.location || "",
+    city: customerData?.city || "",
+    postalCode: customerData?.postalCode || "",
+    imageUrl: customerData?.imageUrl,
   });
 
-  const [formData, setFormData] = useState<CustomerData>(customerData);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  // Update form data when customerData changes
+  React.useEffect(() => {
+    if (customerData) {
+      setFormData({
+        name: customerData.name || "",
+        email: customerData.email || "",
+        phone: customerData.phone || "",
+        address: customerData.location || "",
+        city: customerData.city || "",
+        postalCode: customerData.postalCode || "",
+        imageUrl: customerData.imageUrl,
+      });
+    }
+  }, [customerData]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -45,9 +62,15 @@ export default function CustomerProfile() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (!customerData?.email) {
+      console.error('No customer email available');
+      return;
+    }
+
     try {
       const formData = new FormData();
       formData.append('image', file);
+      formData.append('email', customerData.email);
 
       const response = await fetch('/api/upload-image', {
         method: 'POST',
@@ -63,11 +86,46 @@ export default function CustomerProfile() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setCustomerData(formData);
+    
+    try {
+      await updateCustomerData({
+        name: formData.name,
+        phone: formData.phone,
+        location: formData.address,
+        city: formData.city,
+        postalCode: formData.postalCode,
+        imageUrl: formData.imageUrl,
+      });
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+    }
+  };
+
+  const handleCancel = () => {
+    if (customerData) {
+      setFormData({
+        name: customerData.name || "",
+        email: customerData.email || "",
+        phone: customerData.phone || "",
+        address: customerData.location || "",
+        city: customerData.city || "",
+        postalCode: customerData.postalCode || "",
+        imageUrl: customerData.imageUrl,
+      });
+    }
     setIsEditing(false);
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#FB7600]"></div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -87,7 +145,7 @@ export default function CustomerProfile() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="flex items-center space-x-4 mb-6">
             <div className="relative">
-              <div 
+              <div
                 className="w-24 h-24 rounded-full overflow-hidden cursor-pointer"
                 onClick={handleImageClick}
               >
@@ -133,10 +191,11 @@ export default function CustomerProfile() {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600]"
+                className="text-gray-800 w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600]"
                 required
               />
             </div>
+
             <div>
               <label className="block text-gray-700 mb-1">Email</label>
               <input
@@ -144,10 +203,11 @@ export default function CustomerProfile() {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600]"
+                className="text-gray-800 w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600]"
                 required
               />
             </div>
+
             <div>
               <label className="block text-gray-700 mb-1">Τηλέφωνο</label>
               <input
@@ -155,10 +215,11 @@ export default function CustomerProfile() {
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600]"
+                className="text-gray-800 w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600]"
                 required
               />
             </div>
+
             <div>
               <label className="block text-gray-700 mb-1">Διεύθυνση</label>
               <input
@@ -166,10 +227,11 @@ export default function CustomerProfile() {
                 name="address"
                 value={formData.address}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600]"
+                className="text-gray-800   w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600]"
                 required
               />
             </div>
+
             <div>
               <label className="block text-gray-700 mb-1">Πόλη</label>
               <input
@@ -177,10 +239,11 @@ export default function CustomerProfile() {
                 name="city"
                 value={formData.city}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600]"
+                className="text-gray-800 w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600]"
                 required
               />
             </div>
+
             <div>
               <label className="block text-gray-700 mb-1">Ταχυδρομικός Κώδικας</label>
               <input
@@ -188,7 +251,7 @@ export default function CustomerProfile() {
                 name="postalCode"
                 value={formData.postalCode}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600]"
+                className="text-gray-800 w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600]"
                 required
               />
             </div>
@@ -197,10 +260,7 @@ export default function CustomerProfile() {
           <div className="flex justify-end space-x-3">
             <button
               type="button"
-              onClick={() => {
-                setFormData(customerData);
-                setIsEditing(false);
-              }}
+              onClick={handleCancel}
               className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
             >
               Ακύρωση
@@ -217,9 +277,9 @@ export default function CustomerProfile() {
         <div className="space-y-6">
           <div className="flex items-start">
             <div className="relative w-24 h-24 rounded-full overflow-hidden mr-4">
-              {customerData.imageUrl ? (
+              {formData.imageUrl ? (
                 <Image
-                  src={customerData.imageUrl}
+                  src={formData.imageUrl}
                   alt="Profile"
                   width={96}
                   height={96}
@@ -227,12 +287,12 @@ export default function CustomerProfile() {
                 />
               ) : (
                 <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500 text-2xl">
-                  {customerData.name.charAt(0)}
+                  {formData.name.charAt(0)}
                 </div>
               )}
             </div>
             <div>
-              <h3 className="text-xl font-semibold text-gray-500">{customerData.name}</h3>
+              <h3 className="text-xl font-semibold text-gray-500">{formData.name}</h3>
               <p className="text-gray-600 mt-2">Πελάτης</p>
             </div>
           </div>
@@ -241,18 +301,18 @@ export default function CustomerProfile() {
             <div className="bg-gray-50 p-4 rounded-lg">
               <h4 className="font-semibold text-gray-700 mb-2">Στοιχεία Επικοινωνίας</h4>
               <p className="text-gray-600">
-                <strong>Email:</strong> {customerData.email}
+                <strong>Email:</strong> {formData.email}
               </p>
               <p className="text-gray-600">
-                <strong>Τηλέφωνο:</strong> {customerData.phone}
+                <strong>Τηλέφωνο:</strong> {formData.phone}
               </p>
             </div>
 
             <div className="bg-gray-50 p-4 rounded-lg">
               <h4 className="font-semibold text-gray-700 mb-2">Διεύθυνση</h4>
-              <p className="text-gray-600">{customerData.address}</p>
+              <p className="text-gray-600">{formData.address}</p>
               <p className="text-gray-600">
-                {customerData.city}, {customerData.postalCode}
+                {formData.city}, {formData.postalCode}
               </p>
             </div>
           </div>

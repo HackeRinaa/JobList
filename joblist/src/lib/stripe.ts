@@ -11,22 +11,25 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 
 export const SUBSCRIPTION_PLANS = {
   BASIC: {
-    name: 'Βασικό',
+    name: 'Βασικό Πλάνο – "Πρόγραμμα Εκκίνησης"',
     price_id: process.env.STRIPE_BASIC_PLAN_PRICE_ID!,
+    stripeProductId: 'prod_Sg2Yu30Qtu5PKP',
     tokens: 50,
-    price: 29.99,
+    price: 30.00,
   },
-  PREMIUM: {
-    name: 'Επαγγελματικό',
+  PRO: {
+    name: 'Pro Πλάνο – "Επαγγελματίας"',
     price_id: process.env.STRIPE_PREMIUM_PLAN_PRICE_ID!,
-    tokens: 120,
-    price: 59.99,
+    stripeProductId: 'prod_Sg2Zvazz2oksnD',
+    tokens: 80,
+    price: 50.00,
   },
-  PROFESSIONAL: {
-    name: 'Premium',
+  ELITE: {
+    name: 'Elite Πλάνο – "Αρχιτεχνίτης"',
     price_id: process.env.STRIPE_PROFESSIONAL_PLAN_PRICE_ID!,
-    tokens: 250,
-    price: 99.99,
+    stripeProductId: 'prod_Sg2afptzMEEp3N',
+    tokens: 120,
+    price: 80.00,
   },
 };
 

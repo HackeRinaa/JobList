@@ -12,13 +12,15 @@ interface DateSelectionProps {
   updateTiming: (timing: Timing) => void;
   onSubmit: () => void;
   onBack: () => void;
+  isSubmitting?: boolean;
 }
 
-export default function DateSelection({
+const DateSelection = React.memo(function DateSelection({
   timing,
   updateTiming,
   onSubmit,
   onBack,
+  isSubmitting = false,
 }: DateSelectionProps) {
   const handleOptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const asap = e.target.value === "asap";
@@ -114,18 +116,31 @@ export default function DateSelection({
       <div className="mt-8 flex justify-between">
         <button
           onClick={onBack}
-          className="rounded-lg border border-gray-300 bg-white px-6 py-2 font-medium text-gray-600 transition-colors hover:bg-[#FB7600] hover:text-white"
+          disabled={isSubmitting}
+          className="rounded-lg border border-gray-300 bg-white px-6 py-2 font-medium text-gray-600 transition-colors hover:bg-[#FB7600] hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Πίσω
         </button>
         <button
           onClick={onSubmit}
-          disabled={!isFormValid()}
-          className="rounded-lg bg-[#FB7600] px-6 py-2 font-medium text-white transition-colors hover:bg-[#E56A00] hover:text-white disabled:bg-gray-300"
+          disabled={!isFormValid() || isSubmitting}
+          className="rounded-lg bg-[#FB7600] px-6 py-2 font-medium text-white transition-colors hover:bg-[#E56A00] hover:text-white disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center"
         >
-          Ανέβασε την Αίτηση
+          {isSubmitting ? (
+            <>
+              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Αποστολή...
+            </>
+          ) : (
+            "Ανέβασε την Αίτηση"
+          )}
         </button>
       </div>
     </div>
   );
-} 
+});
+
+export default DateSelection; 

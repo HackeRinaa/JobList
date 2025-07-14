@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, Suspense, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { JobCategory } from "@/types/prisma";
 import CategorySelection from "@/components/customer/CategorySelection";
@@ -36,6 +36,8 @@ function CustomerForm() {
   const searchParams = useSearchParams();
   const [step, setStep] = useState(1);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const [formData, setFormData] = useState<FormData>({
     category: "",
@@ -57,7 +59,10 @@ function CustomerForm() {
     },
   });
 
+  // Initialize component only once
   useEffect(() => {
+    if (isInitialized) return;
+    
     // Check if user is logged in
     const token = localStorage.getItem('token');
     setIsLoggedIn(!!token);
@@ -70,52 +75,73 @@ function CustomerForm() {
         category: categoryParam as JobCategory
       }));
     }
-  }, [searchParams]);
+    
+    setIsInitialized(true);
+  }, [isInitialized, searchParams]);
 
-  const updateFormData = (updates: Partial<FormData>) => {
+  const updateFormData = useCallback((updates: Partial<FormData>) => {
     setFormData((prev) => ({ ...prev, ...updates }));
-  };
+  }, []);
 
-  const nextStep = () => setStep((prev) => prev + 1);
-  const prevStep = () => setStep((prev) => prev - 1);
+  const nextStep = useCallback(() => setStep((prev) => prev + 1), []);
+  const prevStep = useCallback(() => setStep((prev) => prev - 1), []);
 
-  const handleSubmit = async () => {
-    // If the user is logged in, redirect to the dashboard
-    if (isLoggedIn) {
-      // In a real app, this would also make an API call to save the listing
-      // Mock saving the listing to localStorage for demo purposes
-      const listings = JSON.parse(localStorage.getItem('activeListings') || '[]');
-      const newListing = {
-        id: `listing_${Date.now()}`,
-        title: formData.jobType || `Εργασία ${formData.category}`,
-        category: formData.category,
-        location: `${formData.address.city}, ${formData.address.postalCode}`,
-        description: formData.jobDescription,
-        postedDate: new Date().toISOString().split('T')[0],
-        budget: "Αναμένεται προσφορά",
-        status: "pending",
-        applications: [],
-      };
+  const handleSubmit = async (e?: React.FormEvent) => {
+    // Prevent default form submission
+    if (e) {
+      e.preventDefault();
+    }
+
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+
+    try {
+      console.log('Submitting job with data:', formData);
       
-      listings.push(newListing);
-      localStorage.setItem('activeListings', JSON.stringify(listings));
-      
-      // Redirect to customer dashboard with active listings tab
-      router.push('/customer/profile?tab=active');
-    } else {
-      // If not logged in, redirect to signup page
-      router.push("/signup/customer/");
+      const response = await fetch('/api/client/job-creation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          isLoggedIn
+        }),
+      });
+
+      const data = await response.json();
+      console.log('API response:', data);
+
+      if (response.ok) {
+        if (data.requiresAuth) {
+          // Save job data to localStorage for after login/signup
+          localStorage.setItem('pendingJobData', JSON.stringify(data.jobData));
+          router.push("/signup/customer/");
+        } else {
+          // Job created successfully, redirect to dashboard
+          router.push('/customer/profile?tab=active');
+        }
+      } else {
+        console.error('Error creating job:', data.error);
+        alert(`Error creating job: ${data.error}`);
+      }
+    } catch (error) {
+      console.error('Error submitting job:', error);
+      alert('Error submitting job. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const steps = [
+  const steps = useMemo(() => [
     { label: "Τύπος Εργασίας" },
     { label: "Λεπτομέρειες Εργασίας" },
     { label: "Λεπτομέρειες Διεύθυνσης" },
     { label: "Επιλογή Ημέρας και Ώρας" },
-  ];
+  ], []);
 
-  const StepWrapper = ({ children }: { children: React.ReactNode }) => (
+  const StepWrapper = useCallback(({ children }: { children: React.ReactNode }) => (
     <motion.div
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
@@ -124,7 +150,44 @@ function CustomerForm() {
     >
       {children}
     </motion.div>
-  );
+  ), []);
+
+  // Memoize form components to prevent re-creation
+  const categorySelectionComponent = useMemo(() => (
+    <CategorySelection
+      selectedCategory={formData.category}
+      onSelect={(category) => updateFormData({ category })}
+      onNext={nextStep}
+    />
+  ), [formData.category, updateFormData, nextStep]);
+
+  const jobDetailsFormComponent = useMemo(() => (
+    <JobDetailsForm
+      formData={formData}
+      updateFormData={updateFormData}
+      onNext={nextStep}
+      onBack={prevStep}
+    />
+  ), [formData, updateFormData, nextStep, prevStep]);
+
+  const addressFormComponent = useMemo(() => (
+    <AddressForm
+      address={formData.address}
+      updateAddress={(address) => updateFormData({ address })}
+      onNext={nextStep}
+      onBack={prevStep}
+    />
+  ), [formData.address, updateFormData, nextStep, prevStep]);
+
+  const dateSelectionComponent = useMemo(() => (
+    <DateSelection
+      timing={formData.timing}
+      updateTiming={(timing) => updateFormData({ timing })}
+      onSubmit={handleSubmit}
+      onBack={prevStep}
+      isSubmitting={isSubmitting}
+    />
+  ), [formData.timing, updateFormData, handleSubmit, prevStep, isSubmitting]);
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -140,44 +203,25 @@ function CustomerForm() {
           <AnimatePresence mode="wait">
             {step === 1 && (
               <StepWrapper key="step1">
-                <CategorySelection
-                  selectedCategory={formData.category}
-                  onSelect={(category) => updateFormData({ category })}
-                  onNext={nextStep}
-                />
+                {categorySelectionComponent}
               </StepWrapper>
             )}
 
             {step === 2 && (
               <StepWrapper key="step2">
-                <JobDetailsForm
-                  formData={formData}
-                  updateFormData={updateFormData}
-                  onNext={nextStep}
-                  onBack={prevStep}
-                />
+                {jobDetailsFormComponent}
               </StepWrapper>
             )}
 
             {step === 3 && (
               <StepWrapper key="step3">
-                <AddressForm
-                  address={formData.address}
-                  updateAddress={(address) => updateFormData({ address })}
-                  onNext={nextStep}
-                  onBack={prevStep}
-                />
+                {addressFormComponent}
               </StepWrapper>
             )}
 
             {step === 4 && (
               <StepWrapper key="step4">
-                <DateSelection
-                  timing={formData.timing}
-                  updateTiming={(timing) => updateFormData({ timing })}
-                  onSubmit={handleSubmit}
-                  onBack={prevStep}
-                />
+                {dateSelectionComponent}
               </StepWrapper>
             )}
           </AnimatePresence>

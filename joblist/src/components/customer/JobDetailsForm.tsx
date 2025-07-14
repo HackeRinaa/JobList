@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 
 interface FormData {
   jobType: string;
@@ -15,7 +15,7 @@ interface JobDetailsFormProps {
   onBack: () => void;
 }
 
-export default function JobDetailsForm({
+const JobDetailsForm = React.memo(function JobDetailsForm({
   formData,
   updateFormData,
   onNext,
@@ -36,14 +36,14 @@ export default function JobDetailsForm({
     updateFormData({ [name]: val });
   };
 
-  const jobTypes = [
+  const jobTypes = useMemo(() => [
     { id: "installation", name: "Νέα εγκατάσταση" },
     { id: "repair", name: "Κατασκευή" },
     { id: "maintenance", name: "Συντηρηση" },
     { id: "upgrade", name: "Αναβάθμιση/Αντικατάσταση" },
     { id: "consultation", name: "Συμβουλή" },
     { id: "other", name: "Άλλο" },
-  ];
+  ], []);
 
   const handleJobTypeSelect = (type: string) => {
     setSelectedJobType(type);
@@ -64,7 +64,7 @@ export default function JobDetailsForm({
           </label>
           <div className="relative">
             <div
-              className="w-full text-gray-600 rounded-lg border border-gray-300 p-2 focus:border-[#FB7600] focus:outline-none focus:ring-1 focus:ring-[#FB7600] cursor-pointer"
+              className="w-full text-gray-800 rounded-lg border border-gray-300 p-2 focus:border-[#FB7600] focus:outline-none focus:ring-1 focus:ring-[#FB7600] cursor-pointer"
               onClick={() => setDropdownOpen((prev) => !prev)}
             >
               {selectedJobType || "Διάλεξε είδος εργασίας"}
@@ -76,7 +76,7 @@ export default function JobDetailsForm({
                   <li
                     key={type.id}
                     onClick={() => handleJobTypeSelect(type.name)}
-                    className="text-gray-600 p-2 hover:bg-[#FB7600] hover:text-white cursor-pointer"
+                    className="text-gray-800 p-2 hover:bg-[#FB7600] hover:text-white cursor-pointer"
                   >
                     {type.name}
                   </li>
@@ -91,7 +91,7 @@ export default function JobDetailsForm({
             Τόπος
           </label>
           <div className="flex gap-4">
-            <label className="flex items-center text-gray-600">
+            <label className="flex items-center text-gray-800">
               <input
                 type="radio"
                 name="location"
@@ -102,7 +102,7 @@ export default function JobDetailsForm({
               />
               Οικία
             </label>
-            <label className="flex items-center text-gray-600">
+            <label className="flex items-center text-gray-800">
               <input
                 type="radio"
                 name="location"
@@ -125,14 +125,14 @@ export default function JobDetailsForm({
               onChange={handleChange}
               className="mr-2 h-4 w-4 rounded cursor-pointer" // Use accent-color
             />
-            <span className="text-gray-600 text-lg">
+            <span className="text-gray-800 text-lg">
               Ειδικά εργαλεία ή εξοπλισμός απαιτείται
             </span>
           </label>
         </div>
 
         <div>
-          <label className="mb-1 block text-lg font-semibold text-gray-600">
+          <label className="mb-1 block text-lg font-semibold text-gray-800">
             Περιέγραψε την δουλειά
           </label>
           <textarea
@@ -140,7 +140,7 @@ export default function JobDetailsForm({
             value={formData.jobDescription}
             onChange={handleChange}
             rows={4}
-            className="w-full text-gray-600 rounded-lg border border-gray-300 p-2 focus:border-[#FB7600] focus:outline-none focus:ring-1 focus:ring-[#FB7600]"
+            className="w-full text-gray-800 rounded-lg border border-gray-300 p-2 focus:border-[#FB7600] focus:outline-none focus:ring-1 focus:ring-[#FB7600]"
             placeholder="Περιγράψτε την εργασία σας λεπτομερώς. Ενσωματώστε οποιεσδήποτε συγκεκριμένες απαιτήσεις ή ανησυχίες."
             required
           ></textarea>
@@ -149,12 +149,14 @@ export default function JobDetailsForm({
 
       <div className="mt-8 flex justify-between">
         <button
+          type="button"
           onClick={onBack}
           className="rounded-lg border border-gray-300 bg-white px-6 py-2 font-medium text-gray-700 transition-colors hover:bg-[#FB7600] hover:text-white hover:border-[#FB7600]"
         >
           Πίσω
         </button>
         <button
+          type="button"
           onClick={onNext}
           disabled={!selectedJobType || !formData.jobDescription}
           className="rounded-lg bg-[#FB7600] px-6 py-2 font-medium text-white transition-colors hover:bg-[#E56A00] disabled:bg-gray-300"
@@ -164,4 +166,6 @@ export default function JobDetailsForm({
       </div>
     </div>
   );
-}
+});
+
+export default JobDetailsForm;

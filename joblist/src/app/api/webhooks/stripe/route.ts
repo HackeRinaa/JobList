@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { prisma } from '@/lib/prisma';
+import { allocateTokensToUser, getPlanByPriceId } from '@/lib/token-management';
 import Stripe from 'stripe';
 
 export async function POST(request: NextRequest) {
@@ -43,21 +44,17 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
         
-        // Map Stripe product to subscription plan
+        // Get plan details from price ID
         const priceId = subscription.items.data[0].price.id;
-        let plan: 'BASIC' | 'PREMIUM' | 'PROFESSIONAL' = 'BASIC';
+        const planDetails = getPlanByPriceId(priceId);
         
-        if (priceId === process.env.STRIPE_PREMIUM_PLAN_PRICE_ID) {
-          plan = 'PREMIUM';
-        } else if (priceId === process.env.STRIPE_PROFESSIONAL_PLAN_PRICE_ID) {
-          plan = 'PROFESSIONAL';
+        if (!planDetails) {
+          console.error(`Invalid price ID: ${priceId}`);
+          return NextResponse.json({ error: 'Invalid plan' }, { status: 400 });
         }
         
-        // Add tokens based on plan
-        let tokens = 0;
-        if (plan === 'BASIC') tokens = 50;
-        else if (plan === 'PREMIUM') tokens = 120;
-        else if (plan === 'PROFESSIONAL') tokens = 250;
+        // Map plan to subscription enum
+        let plan: 'BASIC' | 'PRO' | 'ELITE' = planDetails.plan;
         
         // Create or update the subscription in the database
         await prisma.subscription.upsert({
@@ -79,13 +76,11 @@ export async function POST(request: NextRequest) {
           }
         });
         
-        // Update user's tokens
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { tokens: { increment: tokens } }
-        });
+        // Allocate tokens to user using the new token management system
+        const newBalance = await allocateTokensToUser(user.id, plan);
         
-        console.log(`Subscription created for user ${user.id}`);
+        console.log(`✅ Subscription created for user ${user.id} (${user.email})`);
+        console.log(`💰 Plan: ${plan}, Tokens allocated: ${planDetails.tokens}, New balance: ${newBalance}`);
       }
     } 
     // Handle subscription payment succeeded (renewal)
@@ -111,19 +106,11 @@ export async function POST(request: NextRequest) {
             }
           });
           
-          // Add tokens based on plan
-          let tokens = 0;
-          if (dbSubscription.plan === 'BASIC') tokens = 50;
-          else if (dbSubscription.plan === 'PREMIUM') tokens = 120;
-          else if (dbSubscription.plan === 'PROFESSIONAL') tokens = 250;
+          // Allocate tokens for renewal using the new token management system
+          const newBalance = await allocateTokensToUser(dbSubscription.userId, dbSubscription.plan);
           
-          // Add tokens to user's balance
-          await prisma.user.update({
-            where: { id: dbSubscription.userId },
-            data: { tokens: { increment: tokens } }
-          });
-          
-          console.log(`Subscription renewed for user ${dbSubscription.userId}`);
+          console.log(`✅ Subscription renewed for user ${dbSubscription.userId} (${dbSubscription.user.email})`);
+          console.log(`💰 Plan: ${dbSubscription.plan}, Tokens allocated, New balance: ${newBalance}`);
         }
       }
     } 
@@ -142,7 +129,7 @@ export async function POST(request: NextRequest) {
           data: { status: 'CANCELLED' }
         });
         
-        console.log(`Subscription cancelled for subscription ID ${dbSubscription.id}`);
+        console.log(`❌ Subscription cancelled for subscription ID ${dbSubscription.id}`);
       }
     }
     

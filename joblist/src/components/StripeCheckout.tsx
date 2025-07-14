@@ -25,9 +25,9 @@ interface StripeCheckoutProps {
 
 // Define plan mapping
 const PLAN_MAPPING = {
-  'Βασικό': 'BASIC',
-  'Επαγγελματικό': 'PREMIUM',
-  'Premium': 'PROFESSIONAL'
+  'Βασικό Πλάνο – "Πρόγραμμα Εκκίνησης"': 'BASIC',
+  'Pro Πλάνο – "Επαγγελματίας"': 'PRO',
+  'Elite Πλάνο – "Αρχιτεχνίτης"': 'ELITE'
 } as const;
 
 const StripeCheckout: React.FC<StripeCheckoutProps> = ({ 

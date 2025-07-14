@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 import FloatingNavbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -17,33 +18,49 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
+      console.log('Attempting login with Supabase...');
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
+      if (error) {
+        console.error('Supabase login error:', error);
+        
+        // Handle specific error cases
+        if (error.message.includes('Email not confirmed')) {
+          setError('Παρακαλώ επιβεβαιώστε το email σας πριν συνδεθείτε. Ελέγξτε το inbox σας.');
+        } else if (error.message.includes('Invalid login credentials')) {
+          setError('Λάθος email ή κωδικός. Παρακαλώ δοκιμάστε ξανά.');
+        } else {
+          setError(`Σφάλμα σύνδεσης: ${error.message}`);
+        }
+        return;
       }
 
-      // Store the token and email
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('userEmail', email);
+      console.log('Login successful:', data);
 
-      // Redirect to the appropriate dashboard based on user role
-      if (data.user.role === 'WORKER') {
-        router.replace('/worker/profile');
-      } else {
-        router.replace('/client/dashboard');
+      if (data.user) {
+        // Store the session token
+        localStorage.setItem('token', data.session?.access_token || '');
+        localStorage.setItem('userEmail', email);
+
+        // Get user role from metadata or database
+        const userRole = data.user.user_metadata?.role || 'CUSTOMER';
+        
+        console.log('User role:', userRole);
+
+        // Redirect to the appropriate dashboard based on user role
+        if (userRole === 'WORKER') {
+          router.replace('/worker/profile');
+        } else {
+          router.replace('/customer/profile');
+        }
       }
     } catch (err) {
       console.error('Login error:', err);
-      setError(err instanceof Error ? err.message : 'An error occurred during login');
+      setError('Προέκυψε σφάλμα κατά τη σύνδεση. Παρακαλώ δοκιμάστε ξανά.');
     } finally {
       setIsLoading(false);
     }
@@ -109,10 +126,10 @@ export default function LoginPage() {
               Δεν έχετε λογαριασμό;{' '}
             </p>
             <div className="flex justify-center gap-2">
-              <a href="/worker" className="text-[#FB7600] hover:underline">
+              <a href="/signup/worker" className="text-[#FB7600] hover:underline">
                   Εγγραφείτε ως Εργάτης
                 </a>
-                <a href="/customer" className="text-[#FB7600] hover:underline">
+                <a href="/signup/customer" className="text-[#FB7600] hover:underline">
                   Εγγραφείτε ως Ιδιώτης
                 </a>
               </div>

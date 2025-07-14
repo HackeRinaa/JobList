@@ -1,9 +1,9 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { FiMapPin, FiCalendar, FiTag, FiMessageSquare, FiStar, FiX, FiPhone, FiMail, FiBookmark, FiPlus } from "react-icons/fi";
 import { useChatContext } from "@/contexts/ChatContext";
+import { useCustomerContext } from "@/contexts/CustomerContext";
 import { useRouter } from "next/navigation";
-import { JobCategory } from "@/types/prisma";
 
 interface Application {
   id: string;
@@ -12,20 +12,15 @@ interface Application {
   message?: string;
   estimatedPrice?: string;
   status: "pending" | "accepted" | "rejected";
+  profession?: string;
+  rating?: number;
+  completedJobs?: number;
+  bio?: string;
+  phone?: string;
+  email?: string;
 }
 
-interface Listing {
-  id: string;
-  title: string;
-  category: JobCategory;
-  location: string;
-  description: string;
-  postedDate: string;
-  budget: string;
-  status: "pending" | "assigned" | "in_progress";
-  applications: Application[];
-  assignedWorkerId?: string;
-}
+
 
 interface Professional {
   id: string;
@@ -134,115 +129,11 @@ const WorkerProfileModal = ({
 };
 
 export default function ActiveListings() {
-  const { startConversation, setSelectedWorker } = useChatContext();
+  const { startConversation } = useChatContext();
+  const { customerListings, updateListingStatus } = useCustomerContext();
   const router = useRouter();
 
-  const [activeListings] = useState<Listing[]>([
-    {
-      id: "1",
-      title: "Επισκευή υδραυλικών",
-      category: JobCategory.PLUMBER,
-      location: "Αθήνα, Κολωνάκι",
-      description: "Διαρροή στο μπάνιο, χρειάζεται άμεση επισκευή",
-      postedDate: "2024-05-15",
-      budget: "Αναμένεται προσφορά",
-      status: "pending",
-      applications: [
-        {
-          id: "a1",
-          workerName: "Γιώργος Παπαδόπουλος",
-          workerId: "w1",
-          message: "Μπορώ να αναλάβω την επισκευή άμεσα",
-          estimatedPrice: "80-100€",
-          status: "pending"
-        }
-      ]
-    },
-    {
-      id: "2",
-      title: "Εγκατάσταση κλιματιστικού",
-      category: JobCategory.HVAC_TECHNICIAN,
-      location: "Αθήνα, Γλυφάδα",
-      description: "Εγκατάσταση κλιματιστικού 12άρι inverter",
-      postedDate: "2024-05-14",
-      budget: "Αναμένεται προσφορά",
-      status: "pending",
-      applications: []
-    },
-    {
-      id: "3",
-      title: "Βάψιμο σπιτιού",
-      category: JobCategory.PAINTER,
-      location: "Αθήνα, Χαλάνδρι",
-      description: "Βάψιμο σαλονιού και δύο υπνοδωματίων",
-      postedDate: "2024-05-13",
-      budget: "Αναμένεται προσφορά",
-      status: "in_progress",
-      applications: [
-        {
-          id: "a2",
-          workerName: "Νίκος Αντωνίου",
-          workerId: "w2",
-          message: "Έχω εμπειρία σε παρόμοιες εργασίες",
-          estimatedPrice: "300-350€",
-          status: "accepted"
-        }
-      ],
-      assignedWorkerId: "w2"
-    }
-  ]);
 
-  // Load listings from localStorage on component mount
-  useEffect(() => {
-    try {
-      const storedListings = localStorage.getItem('activeListings');
-      if (storedListings) {
-        // Parse the stored listings
-        const parsedListings = JSON.parse(storedListings);
-        
-        // If there are new listings, add them to the existing mock data
-        if (parsedListings && parsedListings.length > 0) {
-          // Create a map of existing listing IDs to avoid duplicates
-          const existingListingIds = new Set(activeListings.map(listing => listing.id));
-          
-          // Filter out any listings that already exist in our mock data
-          const newListings = parsedListings.filter(
-            (listing: Partial<Listing>) => !existingListingIds.has(listing.id || '')
-          );
-          
-          // If there are new listings, add them to the state
-          if (newListings.length > 0) {
-            setActiveListings(prevListings => [
-              ...newListings.map((listing: Partial<Listing>) => ({
-                id: listing.id || `new_${Date.now()}`,
-                title: listing.title || 'Νέα Αγγελία',
-                category: listing.category || 'Γενικά',
-                location: listing.location || 'Δεν καθορίστηκε',
-                description: listing.description || '',
-                postedDate: listing.postedDate || new Date().toISOString().split('T')[0],
-                budget: listing.budget || 'Αναμένεται προσφορά',
-                status: listing.status || 'pending',
-                applications: listing.applications || [],
-                assignedWorkerId: listing.assignedWorkerId
-              })),
-              ...prevListings,
-            ]);
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error loading listings from localStorage:', error);
-    }
-  }, []);
-
-  // Update localStorage when listings change
-  useEffect(() => {
-    try {
-      localStorage.setItem('activeListings', JSON.stringify(activeListings));
-    } catch (error) {
-      console.error('Error saving listings to localStorage:', error);
-    }
-  }, [activeListings]);
 
   const [expandedListing, setExpandedListing] = useState<string | null>(null);
   const [selectedWorker, setSelectedWorker] = useState<Application | null>(null);
@@ -256,24 +147,12 @@ export default function ActiveListings() {
     return date.toLocaleDateString("el-GR");
   };
 
-  const handleAssignWorker = (listingId: string, workerId: string) => {
-    setActiveListings(
-      activeListings.map((listing) =>
-        listing.id === listingId
-          ? { ...listing, status: "assigned", assignedWorkerId: workerId }
-          : listing
-      )
-    );
+  const handleAssignWorker = (listingId: string) => {
+    updateListingStatus(listingId, "assigned");
   };
 
   const handleStartWork = (listingId: string) => {
-    setActiveListings(
-      activeListings.map((listing) =>
-        listing.id === listingId
-          ? { ...listing, status: "in_progress" }
-          : listing
-      )
-    );
+    updateListingStatus(listingId, "in_progress");
   };
 
   const getStatusLabel = (status: string) => {
@@ -317,11 +196,11 @@ export default function ActiveListings() {
   };
 
   // Function to handle messaging an assigned worker
-  const handleMessageWorker = (listing: Listing) => {
+  const handleMessageWorker = (listing: any) => {
     if (!listing.assignedWorkerId) return;
     
     // Find the assigned worker's details
-    const assignedWorker = listing.applications.find(app => app.workerId === listing.assignedWorkerId);
+    const assignedWorker = listing.applications.find((app: any) => app.workerId === listing.assignedWorkerId);
     if (!assignedWorker) return;
 
     // Start or get existing conversation
@@ -413,9 +292,9 @@ export default function ActiveListings() {
         </button>
       </div>
 
-      {activeListings.length > 0 ? (
+      {customerListings.length > 0 ? (
         <div className="space-y-4">
-          {activeListings.map((listing) => (
+          {customerListings.map((listing) => (
             <div
               key={listing.id}
               className="bg-white border border-gray-200 rounded-lg overflow-hidden"
@@ -504,7 +383,7 @@ export default function ActiveListings() {
                                   </p>
                                   <div className="flex items-center gap-2">
                                     <p className="text-sm text-gray-500">
-                                      {formatDate(application.date)}
+                                      {formatDate(listing.postedDate)}
                                     </p>
                                     {application.estimatedPrice && (
                                       <p className="text-sm font-medium text-[#FB7600]">
@@ -573,7 +452,7 @@ export default function ActiveListings() {
                                 {listing.status === "pending" && (
                                   <button
                                     onClick={() =>
-                                      handleAssignWorker(listing.id, application.workerId)
+                                      handleAssignWorker(listing.id)
                                     }
                                     className="px-3 py-1 bg-[#FB7600] text-white text-sm rounded-lg hover:bg-orange-700"
                                   >

@@ -1,96 +1,13 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { FiMapPin, FiStar, FiPhone, FiMail, FiTrash2 } from "react-icons/fi";
 import Link from "next/link";
-
-interface Professional {
-  id: string;
-  name: string;
-  profession: string;
-  location: string;
-  rating: number;
-  completedJobs: number;
-  phone?: string;
-  email?: string;
-  bio?: string;
-}
+import { useCustomerContext } from "@/contexts/CustomerContext";
 
 export default function SavedProfessionals() {
-  const [savedProfessionals, setSavedProfessionals] = useState<Professional[]>([]);
+  const { savedProfessionals, removeSavedProfessional } = useCustomerContext();
   const [expandedProfessional, setExpandedProfessional] = useState<string | null>(null);
   const [showContactInfo, setShowContactInfo] = useState<{[key: string]: boolean}>({});
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Load saved professionals from localStorage on component mount
-  useEffect(() => {
-    const loadSavedProfessionals = () => {
-      const savedProfessionalsString = localStorage.getItem('savedProfessionals');
-      if (savedProfessionalsString) {
-        try {
-          const professionals = JSON.parse(savedProfessionalsString) as Professional[];
-          setSavedProfessionals(professionals);
-        } catch (error) {
-          console.error('Error parsing saved professionals:', error);
-          // If there's an error parsing, set default demo data
-          setSavedProfessionals(getDefaultProfessionals());
-        }
-      } else {
-        // If no saved professionals, provide demo data for first-time users
-        setSavedProfessionals(getDefaultProfessionals());
-      }
-      setIsLoading(false);
-    };
-
-    loadSavedProfessionals();
-  }, []);
-
-  // Get default professionals for demo purposes
-  const getDefaultProfessionals = (): Professional[] => {
-    return [
-      {
-        id: "1",
-        name: "Γιώργος Παπαδόπουλος",
-        profession: "Υδραυλικός",
-        location: "Αθήνα, Κολωνάκι",
-        rating: 4.8,
-        completedJobs: 127,
-        phone: "6912345678",
-        email: "giorgos@example.com",
-        bio: "Επαγγελματίας υδραυλικός με 15 χρόνια εμπειρίας. Εξειδίκευση σε επισκευές και εγκαταστάσεις σε κατοικίες και επαγγελματικούς χώρους.",
-      },
-      {
-        id: "2",
-        name: "Νίκος Αντωνίου",
-        profession: "Ηλεκτρολόγος",
-        location: "Αθήνα, Γλυφάδα",
-        rating: 4.6,
-        completedJobs: 98,
-        phone: "6923456789",
-        email: "nikos@example.com",
-        bio: "Πιστοποιημένος ηλεκτρολόγος με εμπειρία σε οικιακές και βιομηχανικές εγκαταστάσεις. Άμεση εξυπηρέτηση και ποιοτική δουλειά.",
-      },
-      {
-        id: "3",
-        name: "Μαρία Κωνσταντίνου",
-        profession: "Καθαρισμοί",
-        location: "Αθήνα, Χαλάνδρι",
-        rating: 4.9,
-        completedJobs: 215,
-        phone: "6934567890",
-        email: "maria@example.com",
-        bio: "Επαγγελματικοί καθαρισμοί σπιτιών και γραφείων με οικολογικά προϊόντα. Εγγυημένο αποτέλεσμα και άψογη εξυπηρέτηση.",
-      },
-    ];
-  };
-
-  const handleRemoveProfessional = (id: string) => {
-    // Filter out the professional to remove
-    const updatedProfessionals = savedProfessionals.filter(pro => pro.id !== id);
-    setSavedProfessionals(updatedProfessionals);
-    
-    // Update localStorage with the new list
-    localStorage.setItem('savedProfessionals', JSON.stringify(updatedProfessionals));
-  };
 
   const toggleContactInfo = (id: string) => {
     setShowContactInfo({
@@ -121,14 +38,6 @@ export default function SavedProfessionals() {
       </div>
     );
   };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#FB7600]"></div>
-      </div>
-    );
-  }
 
   return (
     <div>
@@ -165,7 +74,7 @@ export default function SavedProfessionals() {
                   </div>
                   <div className="flex flex-col items-end">
                     <button
-                      onClick={() => handleRemoveProfessional(professional.id)}
+                      onClick={() => removeSavedProfessional(professional.id)}
                       className="text-red-500 hover:text-red-700"
                       title="Αφαίρεση από αποθηκευμένους"
                     >

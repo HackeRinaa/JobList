@@ -10,6 +10,7 @@ interface Plan {
   tokens: number;
   features: string[];
   recommended: boolean;
+  stripeProductId: string;
 }
 
 interface ChoosePlanProps {

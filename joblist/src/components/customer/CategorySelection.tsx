@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useMemo } from "react";
 import { JobCategory } from "@/types/prisma";
 import { categoryTranslations, categoryIcons } from "@/utils/categories";
 
@@ -9,16 +9,18 @@ interface CategorySelectionProps {
   onNext: () => void;
 }
 
-export default function CategorySelection({
+const CategorySelection = React.memo(function CategorySelection({
   selectedCategory,
   onSelect,
   onNext,
 }: CategorySelectionProps) {
-  const categories = Object.values(JobCategory).map(category => ({
-    id: category,
-    name: categoryTranslations[category],
-    Icon: categoryIcons[category]
-  }));
+  const categories = useMemo(() => 
+    Object.values(JobCategory).map(category => ({
+      id: category,
+      name: categoryTranslations[category],
+      Icon: categoryIcons[category]
+    })), []
+  );
 
   return (
     <div>
@@ -29,6 +31,7 @@ export default function CategorySelection({
         {categories.map(({ id, name, Icon }) => (
           <button
             key={id}
+            type="button"
             className={`flex flex-col items-center justify-center rounded-lg border-2 p-4 transition-all ${
               selectedCategory === id
                 ? "border-[#FB7600] bg-orange-50"
@@ -52,6 +55,7 @@ export default function CategorySelection({
 
       <div className="mt-8 flex justify-end">
         <button
+          type="button"
           onClick={onNext}
           disabled={!selectedCategory}
           className="rounded-lg bg-[#FB7600] px-6 py-2 font-medium text-white transition-colors hover:hover:bg-[#e66a00] disabled:bg-gray-300"
@@ -61,4 +65,6 @@ export default function CategorySelection({
       </div>
     </div>
   );
-} 
+});
+
+export default CategorySelection; 

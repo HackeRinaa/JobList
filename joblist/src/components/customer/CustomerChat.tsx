@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from "react";
 import ChatInterface from "../chat/ChatInterface";
 import { useChatContext } from "@/contexts/ChatContext";
+import { useCustomerContext } from "@/contexts/CustomerContext";
 
 export default function CustomerChat() {
   const { getConversationsByRole, sendMessage, isLoading } = useChatContext();
+  const { customerData } = useCustomerContext();
   const [initialConversationId, setInitialConversationId] = useState<string | null>(null);
 
-  // Mock current customer ID - in a real app, this would come from authentication
-  const currentCustomerId = "customer1"; 
+  // Use customer ID from context or fallback to mock
+  const currentCustomerId = customerData?.id || "customer1"; 
 
   // Get conversations for this customer
   const conversations = getConversationsByRole("customer", currentCustomerId);

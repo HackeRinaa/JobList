@@ -64,13 +64,20 @@ export default function WorkerProfile({ userData }: WorkerProfileProps) {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (!formData.email) {
+      console.error('No email available');
+      setError('No email available for upload');
+      return;
+    }
+
     try {
-      const formData = new FormData();
-      formData.append('image', file);
+      const uploadFormData = new FormData();
+      uploadFormData.append('image', file);
+      uploadFormData.append('email', formData.email);
 
       const response = await fetch('/api/upload-image', {
         method: 'POST',
-        body: formData,
+        body: uploadFormData,
       });
 
       if (!response.ok) throw new Error('Failed to upload image');

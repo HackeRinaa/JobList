@@ -7,12 +7,31 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase URL or Anon Key');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Get the site URL from environment or use localhost for development
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+    flowType: 'pkce'
+  }
+});
 
 export const getUser = async () => {
-  const { data: { user }, error } = await supabase.auth.getUser();
-  if (error) throw error;
-  return user;
+  try {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error) {
+      console.error('Error getting user:', error);
+      throw error;
+    }
+    console.log('Current user:', user);
+    return user;
+  } catch (error) {
+    console.error('getUser error:', error);
+    return null;
+  }
 };
 
 export const signOut = async () => {
@@ -33,6 +52,9 @@ export const signUpWithEmail = async (email: string, password: string) => {
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
+    options: {
+      emailRedirectTo: `${siteUrl}/login`
+    }
   });
   if (error) throw error;
   return data;

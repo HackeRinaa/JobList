@@ -29,6 +29,7 @@
     "bcrypt": "^6.0.0",
     "child_process": "^1.0.2",
     "dotenv": "^16.5.0",
+    "dotenv-cli": "^8.0.0",
     "framer-motion": "^12.4.7",
     "fs": "^0.0.1-security",
     "leaflet": "^1.9.4",
