@@ -4,7 +4,7 @@ const prisma = new PrismaClient();
 
 async function removeUser() {
   try {
-    const email = 'm.papadimitriou@satways.net';
+    const email = 'marina.papadimitriou@outlook.com';
     
     console.log(`Looking for user with email: ${email}`);
     

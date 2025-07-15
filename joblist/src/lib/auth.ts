@@ -150,3 +150,63 @@ export function generateToken(email: string, role: string): string {
     JWT_SECRET
   );
 } 
+
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+const supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
+
+export async function refreshToken() {
+  try {
+    const { data: { session }, error } = await supabaseClient.auth.getSession();
+    
+    if (error) {
+      console.error('Error getting session:', error);
+      throw error;
+    }
+
+    if (!session) {
+      throw new Error('No session found');
+    }
+
+    // Store the new access token
+    localStorage.setItem('token', session.access_token);
+    
+    return session.access_token;
+  } catch (error) {
+    console.error('Error refreshing token:', error);
+    // Clear tokens and redirect to login
+    localStorage.removeItem('token');
+    window.location.href = '/login';
+    throw error;
+  }
+}
+
+export async function getValidToken() {
+  try {
+    // Get current token
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('No token found');
+    }
+
+    // Verify token with Supabase
+    const { data: { user }, error } = await supabaseClient.auth.getUser(token);
+    
+    if (error?.message?.includes('expired') || error?.message?.includes('invalid')) {
+      // Token is expired or invalid, try to refresh
+      return await refreshToken();
+    }
+
+    if (error || !user) {
+      throw error || new Error('Invalid token');
+    }
+
+    return token;
+  } catch (error) {
+    console.error('Error getting valid token:', error);
+    throw error;
+  }
+} 

@@ -60,8 +60,7 @@ export default function LoginPage() {
       }
     } catch (err) {
       console.error('Login error:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      setError(`Προέκυψε σφάλμα κατά τη σύνδεση: ${errorMessage}`);
+      setError('Προέκυψε σφάλμα κατά τη σύνδεση. Παρακαλώ δοκιμάστε ξανά.');
     } finally {
       setIsLoading(false);
     }

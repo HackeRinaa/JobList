@@ -52,11 +52,11 @@ const StripeCheckout: React.FC<StripeCheckoutProps> = ({
         throw new Error('Invalid plan selected');
       }
 
-      // Create checkout session
-      const response = await fetch('/api/worker/subscription', {
+      // Create checkout session using the initial-checkout endpoint
+      const response = await fetch('/api/worker/initial-checkout', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ 
           planId,
@@ -69,7 +69,7 @@ const StripeCheckout: React.FC<StripeCheckoutProps> = ({
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to create checkout session');
+        throw new Error(data.message || 'Failed to create checkout session');
       }
 
       // Store the tempCustomerId in localStorage if available

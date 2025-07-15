@@ -175,7 +175,7 @@ export default function CustomerSignup() {
       <div className="flex-grow flex flex-col justify-center py-6 sm:py-12 px-4 sm:px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
           <h2 className="text-center text-2xl sm:text-3xl font-extrabold text-gray-900">
-            Create your customer account
+            Δημιουργία λογαριασμού πελάτη
           </h2>
           {hasPendingJob && (
             <p className="mt-2 text-center text-sm text-gray-600">

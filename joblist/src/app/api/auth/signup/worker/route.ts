@@ -62,7 +62,7 @@ export async function POST(req: Request) {
     // Generate a temporary password for Supabase auth (simpler format)
     const tempPassword = `Temp${Date.now()}${Math.random().toString(36).substring(2, 8)}`;
 
-    // Create Supabase auth user first
+    // Create Supabase auth user with email confirmation
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: data.email,
       password: tempPassword,
@@ -71,7 +71,8 @@ export async function POST(req: Request) {
           first_name: data.firstName,
           last_name: data.lastName,
           role: 'WORKER'
-        }
+        },
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/verify-email`
       }
     });
 
@@ -83,7 +84,14 @@ export async function POST(req: Request) {
       );
     }
 
-    console.log("Created Supabase auth user:", authData.user?.id);
+    if (!authData.user || !authData.user.id) {
+      return new NextResponse(
+        JSON.stringify({ success: false, error: "Failed to create auth user" }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log("Created Supabase auth user:", authData.user.id);
 
     // Start transaction for database user creation
     const { user } = await prisma.$transaction(async (tx) => {
