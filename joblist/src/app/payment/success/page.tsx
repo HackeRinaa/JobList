@@ -10,7 +10,6 @@ function PaymentSuccessContent() {
   const [error, setError] = useState<string | null>(null);
   const [registrationComplete, setRegistrationComplete] = useState(false);
   const [email, setEmail] = useState<string | null>(null);
-  const [tempCode, setTempCode] = useState<string | null>(null);
   
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -93,9 +92,11 @@ function PaymentSuccessContent() {
           throw new Error(data.error || 'Failed to complete registration');
         }
         
-        // Store email and temp code for password creation
+        // Note: We'll handle password setup in the password setup page
+        console.log('Registration completed successfully');
+        
+        // Store email for password creation
         setEmail(formData.email);
-        setTempCode(generatedTempCode);
         
         // Registration successful, clean up local storage
         localStorage.removeItem('workerRegistration');
@@ -124,8 +125,8 @@ function PaymentSuccessContent() {
   };
   
   const handleCreatePassword = () => {
-    if (email && tempCode) {
-      router.push(`/set-password?email=${encodeURIComponent(email)}&code=${encodeURIComponent(tempCode)}`);
+    if (email) {
+      router.push(`/set-password/worker?email=${encodeURIComponent(email)}`);
     }
   };
 

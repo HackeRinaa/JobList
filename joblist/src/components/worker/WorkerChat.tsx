@@ -1,25 +1,98 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import ChatInterface from "../chat/ChatInterface";
-import { useChatContext } from "@/contexts/ChatContext";
 
 export default function WorkerChat() {
-  const { getConversationsByRole, sendMessage, isLoading } = useChatContext();
+  const [conversations, setConversations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock current worker ID - in a real app, this would come from authentication
-  const currentWorkerId = "worker1"; 
+  // Fetch conversations
+  useEffect(() => {
+    const fetchConversations = async () => {
+      try {
+        setLoading(true);
+        const token = localStorage.getItem('token');
+        
+        if (!token) {
+          setError('Authentication required');
+          return;
+        }
 
-  // Get conversations for this worker
-  const conversations = getConversationsByRole("worker", currentWorkerId);
+        const response = await fetch('/api/worker/chat', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch conversations');
+        }
+
+        const data = await response.json();
+        setConversations(data.conversations || []);
+      } catch (err) {
+        console.error('Error fetching conversations:', err);
+        setError('Failed to load conversations');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchConversations();
+  }, []);
 
   // Function to handle sending a message
-  const handleSendMessage = (conversationId: string, messageText: string) => {
-    sendMessage(conversationId, messageText, "worker");
+  const handleSendMessage = async (conversationId: string, messageText: string) => {
+    try {
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        setError('Authentication required');
+        return;
+      }
+
+      const response = await fetch('/api/worker/chat', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          applicationId: conversationId,
+          content: messageText
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send message');
+      }
+
+      // Refresh conversations to show new message
+      window.location.reload();
+    } catch (err) {
+      console.error('Error sending message:', err);
+      setError('Failed to send message');
+    }
   };
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#FB7600]"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-red-500 mb-4">{error}</p>
+        <button 
+          onClick={() => window.location.reload()}
+          className="bg-[#FB7600] text-white px-4 py-2 rounded-lg hover:bg-[#e66a00] transition-colors"
+        >
+          Δοκιμάστε ξανά
+        </button>
       </div>
     );
   }

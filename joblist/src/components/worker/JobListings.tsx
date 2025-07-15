@@ -1,11 +1,10 @@
 "use client";
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { FiSearch, FiFilter } from "react-icons/fi";
 import JobListingCard from "./JobListingCard";
 import { UserContext } from "@/contexts/WorkerContext";
 import { JobCategory } from "@/types/prisma";
-import { getAllCategories } from "@/utils/categories";
-import { UserData } from '@/types/user';
+import { getAllCategories, categoryTranslations } from "@/utils/categories";
 
 interface JobListing {
   id: string;
@@ -18,77 +17,55 @@ interface JobListing {
   applied: boolean;
   premium: boolean;
   tokenCost: number;
+  customerName?: string;
+  customerEmail?: string;
 }
 
 export default function JobListings() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<JobCategory | "">("");
   const [showFilters, setShowFilters] = useState(false);
+  const [jobListings, setJobListings] = useState<JobListing[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const userData = useContext(UserContext);
-  const [jobListings, setJobListings] = useState<JobListing[]>([
-    {
-      id: "1",
-      title: "Εγκατάσταση ηλεκτρικού πίνακα",
-      category: JobCategory.ELECTRICIAN,
-      location: "Αθήνα, Κολωνάκι",
-      description: "Χρειάζομαι έναν ηλεκτρολόγο για την εγκατάσταση νέου ηλεκτρικού πίνακα σε διαμέρισμα 85τ.μ.",
-      postedDate: "2024-05-18",
-      budget: "150-200€",
-      applied: false,
-      premium: true,
-      tokenCost: 3,
-    },
-    {
-      id: "2",
-      title: "Επισκευή διαρροής νερού",
-      category: JobCategory.PLUMBER,
-      location: "Θεσσαλονίκη, Καλαμαριά",
-      description: "Έχω διαρροή νερού στο μπάνιο, χρειάζομαι άμεσα υδραυλικό.",
-      postedDate: "2024-05-17",
-      budget: "50-80€",
-      applied: false,
-      premium: false,
-      tokenCost: 1,
-    },
-    {
-      id: "3",
-      title: "Βάψιμο εσωτερικών χώρων",
-      category: JobCategory.PAINTER,
-      location: "Αθήνα, Γλυφάδα",
-      description: "Αναζητώ επαγγελματία για βάψιμο σαλονιού και δύο υπνοδωματίων.",
-      postedDate: "2024-05-16",
-      budget: "300-400€",
-      applied: true,
-      premium: false,
-      tokenCost: 1,
-    },
-    {
-      id: "4",
-      title: "Εγκατάσταση κλιματιστικού",
-      category: JobCategory.HVAC_TECHNICIAN,
-      location: "Πάτρα, Κέντρο",
-      description: "Χρειάζομαι τεχνικό για εγκατάσταση κλιματιστικού 12άρι inverter.",
-      postedDate: "2024-05-15",
-      budget: "80-120€",
-      applied: false,
-      premium: true,
-      tokenCost: 2,
-    },
-    {
-      id: "5",
-      title: "Επισκευή πλυντηρίου",
-      category: JobCategory.APPLIANCE_REPAIR,
-      location: "Ηράκλειο, Κρήτη",
-      description: "Το πλυντήριο ρούχων δεν λειτουργεί σωστά, χρειάζεται επισκευή.",
-      postedDate: "2024-05-14",
-      budget: "60-100€",
-      applied: false,
-      premium: false,
-      tokenCost: 1,
-    },
-  ]);
 
   const allCategories = getAllCategories();
+
+  // Fetch job listings from API
+  useEffect(() => {
+    const fetchJobListings = async () => {
+      try {
+        setLoading(true);
+        const token = localStorage.getItem('token');
+        
+        if (!token) {
+          setError('Authentication required');
+          return;
+        }
+
+        const response = await fetch('/api/worker/listings', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch job listings');
+        }
+
+        const data = await response.json();
+        setJobListings(data.listings || []);
+      } catch (err) {
+        console.error('Error fetching job listings:', err);
+        setError('Failed to load job listings');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchJobListings();
+  }, []);
 
   const [successMessage, setSuccessMessage] = useState("");
 
@@ -122,6 +99,29 @@ export default function JobListings() {
     
     return matchesSearch && matchesCategory && matchesExpertise;
   });
+
+  if (loading) {
+    return (
+      <div className="text-center py-8">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#FB7600] mx-auto mb-4"></div>
+        <p className="text-gray-500">Φόρτωση αγγελιών...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-red-500 mb-4">{error}</p>
+        <button 
+          onClick={() => window.location.reload()}
+          className="bg-[#FB7600] text-white px-4 py-2 rounded-lg hover:bg-[#e66a00] transition-colors"
+        >
+          Δοκιμάστε ξανά
+        </button>
+      </div>
+    );
+  }
 
   if (!userData?.profile?.preferences?.length) {
     return (
@@ -171,9 +171,9 @@ export default function JobListings() {
                 className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600]"
               >
                 <option value="">Όλες οι κατηγορίες</option>
-                {allCategories.map(({ id, name }) => (
-                  <option key={id} value={id}>
-                    {name}
+                {allCategories.map((category) => (
+                  <option key={category} value={category}>
+                    {categoryTranslations[category]}
                   </option>
                 ))}
               </select>

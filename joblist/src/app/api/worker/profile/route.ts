@@ -1,28 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import jwt from 'jsonwebtoken';
-import { verifyToken } from '@/lib/auth';
-import { JobCategory } from '@/types/prisma';
 import { validateJobCategories } from '@/utils/categories';
+import { createClient } from '@supabase/supabase-js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-// Helper function to verify JWT token
-function verifyToken(token: string) {
-  try {
-    return jwt.verify(token, JWT_SECRET);
-  } catch (error) {
-    return null;
-  }
+if (!supabaseUrl || !supabaseServiceKey) {
+  throw new Error('Missing Supabase URL or Service Role Key');
 }
 
-// Temporary development helper to get a user by email
-const getUserByEmail = async (email: string) => {
-  return await prisma.user.findUnique({
-    where: { email },
-    include: { profile: true }
-  });
-};
+const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
 // GET endpoint - fetch worker profile
 export async function GET(req: NextRequest) {
@@ -36,25 +24,29 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Extract and verify the token
-    const token = authHeader.split(' ')[1];
-    const decoded = verifyToken(token);
-    if (!decoded || typeof decoded === 'string') {
+    // Extract the Supabase access token
+    const accessToken = authHeader.split(' ')[1];
+    
+    // Verify the token with Supabase
+    const { data: { user }, error } = await supabaseAdmin.auth.getUser(accessToken);
+    
+    if (error || !user) {
+      console.error('Token verification error:', error);
       return NextResponse.json(
         { message: 'Invalid token' },
         { status: 401 }
       );
     }
 
-    // Get user data
-    const user = await prisma.user.findUnique({
-      where: { email: decoded.email },
+    // Get user data from database
+    const dbUser = await prisma.user.findUnique({
+      where: { email: user.email },
       include: {
         profile: true,
       },
     });
 
-    if (!user) {
+    if (!dbUser) {
       return NextResponse.json(
         { message: 'User not found' },
         { status: 404 }
@@ -64,12 +56,12 @@ export async function GET(req: NextRequest) {
     // Return user data
     return NextResponse.json({
       user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
+        id: dbUser.id,
+        name: dbUser.name,
+        email: dbUser.email,
       },
-      profile: user.profile,
-      rating: user.profile?.rating || 0,
+      profile: dbUser.profile,
+      rating: dbUser.profile?.rating || 0,
       reviewCount: 0, // TODO: Implement review count
     });
   } catch (error) {
@@ -93,10 +85,14 @@ export async function PUT(req: NextRequest) {
       );
     }
 
-    // Extract and verify the token
-    const token = authHeader.split(' ')[1];
-    const decoded = verifyToken(token);
-    if (!decoded) {
+    // Extract the Supabase access token
+    const accessToken = authHeader.split(' ')[1];
+    
+    // Verify the token with Supabase
+    const { data: { user }, error } = await supabaseAdmin.auth.getUser(accessToken);
+    
+    if (error || !user) {
+      console.error('Token verification error:', error);
       return NextResponse.json(
         { message: 'Invalid token' },
         { status: 401 }
@@ -111,7 +107,7 @@ export async function PUT(req: NextRequest) {
 
     // Update user data
     const updatedUser = await prisma.user.update({
-      where: { email: decoded.email },
+      where: { email: user.email },
       data: {
         name,
         profile: {

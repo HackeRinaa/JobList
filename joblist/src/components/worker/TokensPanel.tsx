@@ -1,10 +1,41 @@
 "use client";
-import React, { useContext } from 'react';
-import { UserContext } from '@/contexts/WorkerContext';
+import React, { useEffect, useState } from 'react';
 import { FiCreditCard, FiPlus } from 'react-icons/fi';
 
 export default function TokensPanel() {
-  const userData = useContext(UserContext);
+  const [tokens, setTokens] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch token data
+  useEffect(() => {
+    const fetchTokens = async () => {
+      try {
+        setLoading(true);
+        const token = localStorage.getItem('token');
+        
+        if (!token) {
+          return;
+        }
+
+        const response = await fetch('/api/worker/subscription', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setTokens(data.tokens || 0);
+        }
+      } catch (err) {
+        console.error('Error fetching tokens:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTokens();
+  }, []);
 
   const tokenPackages = [
     {
@@ -38,7 +69,9 @@ export default function TokensPanel() {
         <h2 className="text-2xl font-bold text-gray-800">Credits</h2>
         <div className="flex items-center bg-gray-100 px-4 py-2 rounded-lg">
           <FiCreditCard className="text-[#FB7600] mr-2" />
-          <span className="font-semibold text-gray-800">{userData?.user?.tokens || 0} credits</span>
+          <span className="font-semibold text-gray-800">
+            {loading ? 'Φόρτωση...' : `${tokens} credits`}
+          </span>
         </div>
       </div>
 

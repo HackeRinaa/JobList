@@ -1,49 +1,93 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from "next/server";
+import { supabaseAdmin } from "@/lib/supabase";
 
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    // Parse request body
-    const { email, tempCode, newPassword } = await req.json();
+    const { email, password } = await request.json();
 
-    // Check required fields
-    if (!email || !tempCode || !newPassword) {
+    if (!email || !password) {
       return NextResponse.json(
-        { error: 'Όλα τα πεδία είναι υποχρεωτικά' },
+        { error: "Email and password are required" },
         { status: 400 }
       );
     }
 
-    // Get user from database
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
-
-    if (!user) {
+    if (password.length < 6) {
       return NextResponse.json(
-        { error: 'Ο χρήστης δεν βρέθηκε' },
-        { status: 404 }
+        { error: "Password must be at least 6 characters long" },
+        { status: 400 }
       );
     }
 
-    // For now, we'll skip the tempCode verification since we're having schema issues
-    // In production, we would verify this code matches what's stored in the database
-    
-    // Store the password securely (in a real implementation, we'd hash it)
-    // Since we're not using Supabase Auth temporarily, we'll just mark the user as verified
-    
-    // Mark user as verified in our database
-    // We need to use a raw SQL query for now since the Prisma client types might not be updated yet
-    await prisma.$executeRaw`UPDATE "User" SET "isVerified" = true, "tempCode" = null WHERE id = ${user.id}`;
+    if (!supabaseAdmin) {
+      return NextResponse.json(
+        { error: "Admin client not available" },
+        { status: 500 }
+      );
+    }
 
-    return NextResponse.json({
-      success: true,
-      message: 'Ο κωδικός πρόσβασης ορίστηκε με επιτυχία',
-    });
+    // Check if there's already a Supabase auth user for this email
+    const { data: { users }, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+    
+    if (listError) {
+      console.error('Error listing users:', listError);
+      return NextResponse.json(
+        { error: "Failed to check existing user" },
+        { status: 500 }
+      );
+    }
+
+    const existingUser = users.find(user => user.email === email);
+    
+    if (existingUser) {
+      // Update existing user's password
+      const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+        existingUser.id,
+        { password: password }
+      );
+
+      if (updateError) {
+        console.error('Error updating user password:', updateError);
+        return NextResponse.json(
+          { error: `Failed to update password: ${updateError.message}` },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: "Password updated successfully"
+      });
+    } else {
+      // Create new user with the password
+      const { error: signUpError } = await supabaseAdmin.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            role: 'WORKER'
+          }
+        }
+      });
+
+      if (signUpError) {
+        console.error('Error creating user:', signUpError);
+        return NextResponse.json(
+          { error: `Failed to create user: ${signUpError.message}` },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: "User created successfully"
+      });
+    }
+
   } catch (error) {
-    console.error('Error setting password:', error);
+    console.error("Password setup error:", error);
     return NextResponse.json(
-      { error: 'Σφάλμα κατά την επεξεργασία του αιτήματος' },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }

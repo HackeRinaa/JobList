@@ -68,7 +68,7 @@ const PersonalDetails = ({
             name="firstName"
             value={formData.firstName}
             onChange={handleInputChange}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FB7600]"
+            className="text-gray-800 w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FB7600]"
           />
         </div>
         <div>
@@ -78,7 +78,7 @@ const PersonalDetails = ({
             name="lastName"
             value={formData.lastName}
             onChange={handleInputChange}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FB7600]"
+            className="text-gray-800 w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FB7600]"
           />
         </div>
       </div>
@@ -91,7 +91,7 @@ const PersonalDetails = ({
             name="email"
             value={formData.email}
             onChange={handleInputChange}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FB7600]"
+            className="text-gray-800 w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FB7600]"
           />
         </div>
         <div>
@@ -101,7 +101,7 @@ const PersonalDetails = ({
             name="phone"
             value={formData.phone}
             onChange={handleInputChange}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FB7600]"
+            className="text-gray-800 w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FB7600]"
           />
         </div>
       </div>
@@ -163,7 +163,7 @@ const PersonalDetails = ({
           onChange={handleInputChange}
           ref={bioTextareaRef}
           rows={4}
-          className="text-gray-600 w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FB7600]"
+          className="text-gray-800 w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FB7600]"
           placeholder="Περιγράψτε την εμπειρία σας και τις υπηρεσίες που προσφέρετε..."
         ></textarea>
       </div>

@@ -11,7 +11,7 @@ if (!supabaseUrl || !supabaseServiceKey) {
 
 const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
-// GET endpoint - fetch job listings for workers
+// GET endpoint - fetch completed jobs for workers
 export async function GET(req: NextRequest) {
   try {
     // Get the authorization header
@@ -37,26 +37,24 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Get worker's profile to check their expertise
+    // Get worker's profile
     const workerProfile = await prisma.user.findUnique({
       where: { email: user.email },
       include: { profile: true }
     });
 
-    if (!workerProfile || !workerProfile.profile) {
+    if (!workerProfile) {
       return NextResponse.json(
         { message: 'Worker profile not found' },
         { status: 404 }
       );
     }
 
-    // Get job listings that match worker's expertise
-    const jobListings = await prisma.jobListing.findMany({
+    // Get completed jobs assigned to this worker
+    const completedJobs = await prisma.jobListing.findMany({
       where: {
-        status: 'PENDING',
-        category: {
-          in: workerProfile.profile.preferences || []
-        }
+        assignedWorkerId: workerProfile.id,
+        status: 'COMPLETED'
       },
       include: {
         customer: {
@@ -67,34 +65,51 @@ export async function GET(req: NextRequest) {
         }
       },
       orderBy: {
-        createdAt: 'desc'
+        updatedAt: 'desc'
+      }
+    });
+
+    // Get reviews for these jobs
+    const reviews = await prisma.review.findMany({
+      where: {
+        reviewedId: workerProfile.id,
+        jobId: {
+          in: completedJobs.map(job => job.id)
+        }
+      },
+      include: {
+        reviewer: {
+          select: {
+            name: true
+          }
+        }
       }
     });
 
     // Transform the data for frontend
-    const transformedListings = jobListings.map(listing => ({
-      id: listing.id,
-      title: listing.title,
-      category: listing.category,
-      location: listing.location,
-      description: listing.description,
-      postedDate: listing.createdAt.toISOString().split('T')[0],
-      budget: listing.budget,
-      applied: false, // TODO: Check if worker has applied
-      premium: listing.premium,
-      tokenCost: listing.tokenCost,
-      customerName: listing.customer.name,
-      customerEmail: listing.customer.email
-    }));
+    const transformedJobs = completedJobs.map(job => {
+      const review = reviews.find(r => r.jobId === job.id);
+      return {
+        id: job.id,
+        title: job.title,
+        category: job.category,
+        location: job.location,
+        completedDate: job.updatedAt.toISOString().split('T')[0],
+        earnings: job.budget, // Assuming budget is the earnings
+        customerName: job.customer.name,
+        customerRating: review?.rating || 0,
+        customerReview: review?.comment || undefined
+      };
+    });
 
     return NextResponse.json({
-      listings: transformedListings
+      completedJobs: transformedJobs
     });
 
   } catch (error) {
-    console.error('Error fetching job listings:', error);
+    console.error('Error fetching completed jobs:', error);
     return NextResponse.json(
-      { message: 'An error occurred while fetching job listings' },
+      { message: 'An error occurred while fetching completed jobs' },
       { status: 500 }
     );
   }

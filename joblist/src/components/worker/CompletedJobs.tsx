@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FiStar, FiCalendar, FiMapPin, FiDollarSign } from "react-icons/fi";
 import { JobCategory } from "@/types/prisma";
 import { categoryTranslations } from "@/utils/categories";
@@ -18,42 +18,44 @@ interface CompletedJob {
 
 export default function CompletedJobs() {
   const [filter, setFilter] = useState("all");
+  const [completedJobs, setCompletedJobs] = useState<CompletedJob[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const [completedJobs] = useState<CompletedJob[]>([
-    {
-      id: "1",
-      title: "Επισκευή πλυντηρίου",
-      category: JobCategory.APPLIANCE_REPAIR,
-      location: "Αθήνα, Κολωνάκι",
-      completedDate: "2024-05-10",
-      earnings: "80€",
-      customerName: "Μαρία Παπαδοπούλου",
-      customerRating: 5,
-      customerReview: "Εξαιρετική δουλειά, συνεπής και επαγγελματίας!"
-    },
-    {
-      id: "2",
-      title: "Εγκατάσταση φωτιστικών",
-      category: JobCategory.ELECTRICIAN,
-      location: "Αθήνα, Γλυφάδα",
-      completedDate: "2024-05-08",
-      earnings: "150€",
-      customerName: "Γιώργος Αντωνίου",
-      customerRating: 4,
-      customerReview: "Καλή δουλειά, μικρή καθυστέρηση στην ώρα προσέλευσης"
-    },
-    {
-      id: "3",
-      title: "Καθαρισμός σπιτιού",
-      category: JobCategory.CLEANING_SERVICE,
-      location: "Αθήνα, Χαλάνδρι",
-      completedDate: "2024-05-05",
-      earnings: "100€",
-      customerName: "Ελένη Δημητρίου",
-      customerRating: 5,
-      customerReview: "Άψογη δουλειά, θα την ξαναπροτιμήσω!"
-    }
-  ]);
+  // Fetch completed jobs from API
+  useEffect(() => {
+    const fetchCompletedJobs = async () => {
+      try {
+        setLoading(true);
+        const token = localStorage.getItem('token');
+        
+        if (!token) {
+          setError('Authentication required');
+          return;
+        }
+
+        const response = await fetch('/api/worker/completed-jobs', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch completed jobs');
+        }
+
+        const data = await response.json();
+        setCompletedJobs(data.completedJobs || []);
+      } catch (err) {
+        console.error('Error fetching completed jobs:', err);
+        setError('Failed to load completed jobs');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCompletedJobs();
+  }, []);
 
   const filteredJobs = completedJobs.filter(job => {
     if (filter === 'rated') return job.customerRating > 0;
@@ -71,6 +73,29 @@ export default function CompletedJobs() {
   const totalEarnings = completedJobs
     .reduce((sum, job) => sum + parseFloat(job.earnings.replace('€', '')), 0)
     .toFixed(2);
+
+  if (loading) {
+    return (
+      <div className="text-center py-8">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#FB7600] mx-auto mb-4"></div>
+        <p className="text-gray-500">Φόρτωση ολοκληρωμένων εργασιών...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-red-500 mb-4">{error}</p>
+        <button 
+          onClick={() => window.location.reload()}
+          className="bg-[#FB7600] text-white px-4 py-2 rounded-lg hover:bg-[#e66a00] transition-colors"
+        >
+          Δοκιμάστε ξανά
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div>

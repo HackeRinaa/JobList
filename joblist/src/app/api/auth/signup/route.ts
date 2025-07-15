@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { JobCategory } from '@/types/prisma';
 import { validateJobCategories } from '@/utils/categories';
 
 export async function POST(request: NextRequest) {

@@ -35,7 +35,6 @@ export default function CustomerSignup() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [hasPendingJob, setHasPendingJob] = useState(false);
-  const [emailSent, setEmailSent] = useState(false);
 
   useEffect(() => {
     // Check if there's pending job data
@@ -77,10 +76,8 @@ export default function CustomerSignup() {
 
       // Check if email confirmation is required
       if (authData.user && !authData.session) {
-        // Email confirmation required
-        setEmailSent(true);
-        setError('Please check your email and click the confirmation link before signing in.');
-        setLoading(false);
+        // Email confirmation required - redirect to simple verification page
+        router.push('/verify-email');
         return;
       }
 
@@ -168,79 +165,9 @@ export default function CustomerSignup() {
     }
   };
 
-  const handleResendEmail = async () => {
-    try {
-      setLoading(true);
-      const { error } = await supabase.auth.resend({
-        type: 'signup',
-        email: formData.email,
-      });
-      
-      if (error) {
-        setError('Failed to resend confirmation email. Please try again.');
-      } else {
-        setError('Confirmation email sent! Please check your inbox.');
-      }
-    } catch {
-      setError('Failed to resend confirmation email. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  if (emailSent) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col">
-        <FloatingNavbar />
-        <div className="flex-grow flex flex-col justify-center py-6 sm:py-12 px-4 sm:px-6 lg:px-8">
-          <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-            <img src="/JobListing.png" alt="JobList Logo" className="mx-auto mb-4 w-20 h-20 animate-bounce" />
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-2">
-              Ελέγξτε το Email σας
-            </h2>
-            <p className="text-gray-700 mb-2">
-              Μόλις στείλαμε ένα email επιβεβαίωσης στο <span className="font-semibold">{formData.email}</span>.
-            </p>
-            <p className="text-gray-500 mb-2">
-              Παρακαλώ κάντε κλικ στον σύνδεσμο στο inbox σας για να επιβεβαιώσετε τον λογαριασμό σας.
-            </p>
-            <p className="text-gray-400 text-xs mb-4">
-              Δεν λάβατε το email; Ελέγξτε το spam ή junk folder.
-            </p>
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-4 text-orange-700">
-              <span className="font-semibold">Δεν μπορείτε να συνεχίσετε μέχρι να επιβεβαιώσετε το email σας.</span>
-            </div>
-          </div>
 
-          <div className="mt-6 sm:mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-            <div className="bg-white py-6 sm:py-8 px-4 shadow sm:rounded-lg sm:px-10">
-              <div className="text-center">
-                {hasPendingJob && (
-                  <p className="text-sm text-gray-500 mb-4">
-                    Μετά την επιβεβαίωση του email σας, μπορείτε να ολοκληρώσετε την αίτηση εργασίας σας.
-                  </p>
-                )}
-                <button
-                  onClick={handleResendEmail}
-                  disabled={loading}
-                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#FB7600] hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50"
-                >
-                  {loading ? 'Αποστολή...' : 'Επαναποστολή Email Επιβεβαίωσης'}
-                </button>
-                <button
-                  onClick={() => router.push('/login')}
-                  className="mt-4 w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
-                >
-                  Μετάβαση στη Σύνδεση
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-        <Footer />
-      </div>
-    );
-  }
+
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">

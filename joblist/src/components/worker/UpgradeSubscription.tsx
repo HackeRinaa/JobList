@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FiCheck, FiX } from "react-icons/fi";
 
 interface PlanFeature {
@@ -20,6 +20,49 @@ interface SubscriptionPlan {
 export default function UpgradeSubscription() {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [paymentStep, setPaymentStep] = useState(0);
+  const [subscription, setSubscription] = useState<{
+    id?: string;
+    status?: string;
+    plan?: string;
+    endDate?: string;
+  } | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch subscription data
+  useEffect(() => {
+    const fetchSubscription = async () => {
+      try {
+        setLoading(true);
+        const token = localStorage.getItem('token');
+        
+        if (!token) {
+          setError('Authentication required');
+          return;
+        }
+
+        const response = await fetch('/api/worker/subscription', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch subscription');
+        }
+
+        const data = await response.json();
+        setSubscription(data.subscription);
+      } catch (err) {
+        console.error('Error fetching subscription:', err);
+        setError('Failed to load subscription data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSubscription();
+  }, []);
   
   const plans: SubscriptionPlan[] = [
     {
@@ -79,10 +122,85 @@ export default function UpgradeSubscription() {
     setPaymentStep(2);
   };
 
+  const handleCancelSubscription = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        setError('Authentication required');
+        return;
+      }
+
+      const response = await fetch('/api/worker/subscription', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ action: 'cancel' })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to cancel subscription');
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        setSubscription({ ...subscription, status: 'CANCELLED' });
+        alert('Subscription cancelled successfully');
+      }
+    } catch (err) {
+      console.error('Error cancelling subscription:', err);
+      setError('Failed to cancel subscription');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="text-center py-8">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#FB7600] mx-auto mb-4"></div>
+        <p className="text-gray-500">Φόρτωση δεδομένων συνδρομής...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-red-500 mb-4">{error}</p>
+        <button 
+          onClick={() => window.location.reload()}
+          className="bg-[#FB7600] text-white px-4 py-2 rounded-lg hover:bg-[#e66a00] transition-colors"
+        >
+          Δοκιμάστε ξανά
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div>
       <h2 className="text-2xl font-bold text-gray-800 mb-2">Αναβάθμιση Συνδρομής</h2>
       <p className="text-gray-600 mb-6">Επίλεξε το κατάλληλο πακέτο για την επιχείρησή σου</p>
+
+      {/* Current Subscription Status */}
+      {subscription && (
+        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <h3 className="text-lg font-semibold text-blue-800 mb-2">Τρέχουσα Συνδρομή</h3>
+          <p className="text-blue-700">
+            Πλάνο: {subscription.plan || 'Βασικό'} | 
+            Κατάσταση: {subscription.status || 'Ενεργή'}
+          </p>
+          {subscription.status === 'ACTIVE' && (
+            <button
+              onClick={handleCancelSubscription}
+              className="mt-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+            >
+              Ακύρωση Συνδρομής
+            </button>
+          )}
+        </div>
+      )}
 
       {paymentStep === 0 && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

@@ -60,7 +60,8 @@ export default function LoginPage() {
       }
     } catch (err) {
       console.error('Login error:', err);
-      setError('Προέκυψε σφάλμα κατά τη σύνδεση. Παρακαλώ δοκιμάστε ξανά.');
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      setError(`Προέκυψε σφάλμα κατά τη σύνδεση: ${errorMessage}`);
     } finally {
       setIsLoading(false);
     }
@@ -89,7 +90,7 @@ export default function LoginPage() {
                 id="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600]"
+                className="text-gray-800 w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600]"
                 required
               />
             </div>
@@ -103,7 +104,7 @@ export default function LoginPage() {
                 id="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600]"
+                className="text-gray-800 w-full p-2 border border-gray-300 rounded-lg focus:ring-[#FB7600] focus:border-[#FB7600]"
                 required
               />
             </div>
@@ -126,10 +127,10 @@ export default function LoginPage() {
               Δεν έχετε λογαριασμό;{' '}
             </p>
             <div className="flex justify-center gap-2">
-              <a href="/signup/worker" className="text-[#FB7600] hover:underline">
+              <a href="/worker" className="text-[#FB7600] hover:underline">
                   Εγγραφείτε ως Εργάτης
                 </a>
-                <a href="/signup/customer" className="text-[#FB7600] hover:underline">
+                <a href="/customer" className="text-[#FB7600] hover:underline">
                   Εγγραφείτε ως Ιδιώτης
                 </a>
               </div>
